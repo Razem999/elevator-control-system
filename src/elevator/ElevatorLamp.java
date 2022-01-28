@@ -33,13 +33,14 @@ public class ElevatorLamp {
 	 * Sets direction to up.
 	 */
 	public void setLightUp() {
-		
+		direction = DirectionLamp.UP;
 	}
 	
 	/**
 	 * Sets direction to down.
 	 */
 	public void setLightDown() {
+		direction = DirectionLamp.DOWN;
 		
 	}
 }
