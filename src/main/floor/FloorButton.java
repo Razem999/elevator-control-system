@@ -10,7 +10,12 @@ import main.common.DirectionalLamp;
  */
 public class FloorButton {
 	/** Indicates which direction the associated lamp is pointing */
-	public DirectionalLamp arrows;
+	private DirectionalLamp arrows;
+	
+	public DirectionalLamp getDirectionalLamp() {
+		return arrows;
+	}
+	
 	
 	/**
 	 * Constructor that accepts a DirectionalLamp value of UP/DOWN
