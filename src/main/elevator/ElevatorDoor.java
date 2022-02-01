@@ -12,14 +12,14 @@ public class ElevatorDoor {
 	/**
 	 * Represents if door is open or not
 	 */
-	private boolean doorState;
+	private boolean isDoorOpen;
 	
 	/**
 	 * Instantiates the elevator door with a specific position: open or closed
 	 * @param doorState Starting door position
 	 */
 	public ElevatorDoor(boolean doorState) {
-		this.doorState = doorState;
+		this.isDoorOpen = doorState;
 	}
 	
 	/**
@@ -27,14 +27,14 @@ public class ElevatorDoor {
 	 * @return The door state
 	 */
 	public boolean isDoorOpen() {
-		return doorState;
+		return isDoorOpen;
 	}
 	
 	/**
 	 * Closes the door if it is open or vice versa
 	 */
 	public void toggleDoorState() {
-		doorState = !doorState;
+		isDoorOpen = !isDoorOpen;
 	}
 	
 	
