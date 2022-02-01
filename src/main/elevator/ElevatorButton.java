@@ -13,7 +13,7 @@ public class ElevatorButton {
 	private ArrayList<Integer> floors = new ArrayList<>();
 	
 	/**
-	 * Represents which button is pressed
+	 * Represents the requested destination floor
 	 */
 	private int buttonPressed; // -1 if no button pressed
 	 
