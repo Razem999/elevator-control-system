@@ -1,5 +1,0 @@
-/**
- * @author Bill
- *
- */
-package elevator;
