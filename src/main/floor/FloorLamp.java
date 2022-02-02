@@ -3,28 +3,28 @@
  */
 package main.floor;
 
-import main.common.DirectionalLamp;
+import main.common.Direction;
 
 /**
  * Class to represent the up/down lamps on a floor
  */
 public class FloorLamp {
 	/** Indicates which direction the lamp is pointing */
-	private DirectionalLamp direction;
+	private Direction direction;
 	
 	/**
-	 * Constructor that accepts a DirectionalLamp value of UP/DOWN
+	 * Constructor that accepts a Direction value of UP/DOWN
 	 * @param direction
 	 */
-	public FloorLamp(DirectionalLamp direction) {
+	public FloorLamp(Direction direction) {
 		this.direction = direction;
 	}
 	
 	/**
 	 * Returns the current direction value
-	 * @return DirectionalLamp - the current direction
+	 * @return Direction - the current direction
 	 */
-	public DirectionalLamp getDirection() {
+	public Direction getDirection() {
 		return direction;
 	}
 	
@@ -32,13 +32,13 @@ public class FloorLamp {
 	 * Sets the lamp direction to UP
 	 */
 	public void setLightUp() {
-		direction = DirectionalLamp.UP;
+		direction = Direction.UP;
 	}
 	
 	/**
 	 * Sets the lamp direction to DOWN
 	 */
 	public void setLightDown() {
-		direction = DirectionalLamp.DOWN;
+		direction = Direction.DOWN;
 	}
 }

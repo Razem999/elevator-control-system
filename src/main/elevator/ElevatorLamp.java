@@ -3,7 +3,7 @@
  */
 package main.elevator;
 
-import main.common.DirectionalLamp;
+import main.common.Direction;
 
 /**
  * The ElevatorLamp class displays the direction that the associated Elevator is heading. 
@@ -13,13 +13,13 @@ public class ElevatorLamp {
 	/**
 	 * The direction enum representing the direction the Elevator is headed towards. 
 	 */
-	private DirectionalLamp direction;
+	private Direction direction;
 	
 	/**
 	 * Instantiates ElevatorLamp's direction.
 	 * @param direction A DirectionLamp used to handle the Elevator's direction state.
 	 */
-	ElevatorLamp(DirectionalLamp direction) {
+	ElevatorLamp(Direction direction) {
 		this.direction = direction;
 	}
 	
@@ -27,7 +27,7 @@ public class ElevatorLamp {
 	 * Gets direction
 	 * @return DirectionLamp
 	 */
-	public DirectionalLamp getDirection() {
+	public Direction getDirection() {
 		return direction;
 	}
 	
@@ -35,14 +35,14 @@ public class ElevatorLamp {
 	 * Sets direction to up.
 	 */
 	public void setLightUp() {
-		direction = DirectionalLamp.UP;
+		direction = Direction.UP;
 	}
 	
 	/**
 	 * Sets direction to down.
 	 */
 	public void setLightDown() {
-		direction = DirectionalLamp.DOWN;
+		direction = Direction.DOWN;
 		
 	}
 }

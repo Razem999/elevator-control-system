@@ -3,25 +3,25 @@
  */
 package main.floor;
 
-import main.common.DirectionalLamp;
+import main.common.Direction;
 
 /**
  * Class to represent a up/down button on a floor
  */
 public class FloorButton {
 	/** Indicates which direction the associated lamp is pointing */
-	private DirectionalLamp arrows;
+	private Direction arrows;
 	
-	public DirectionalLamp getDirectionalLamp() {
+	public Direction getDirectionalLamp() {
 		return arrows;
 	}
 	
 	
 	/**
-	 * Constructor that accepts a DirectionalLamp value of UP/DOWN
+	 * Constructor that accepts a Direction value of UP/DOWN
 	 * @param arrows 
 	 */
-	public FloorButton(DirectionalLamp arrows) {
+	public FloorButton(Direction arrows) {
 		this.arrows = arrows;
 	}
 	
@@ -29,13 +29,13 @@ public class FloorButton {
 	 * Simulates pressing the up directional button
 	 */
 	public void pressUpButton() {
-		arrows = DirectionalLamp.UP;
+		arrows = Direction.UP;
 	}
 	
 	/**
 	 * Simulates pressing the down directional button
 	 */
 	public void pressDownButton() {
-		arrows = DirectionalLamp.DOWN;
+		arrows = Direction.DOWN;
 	}
 }

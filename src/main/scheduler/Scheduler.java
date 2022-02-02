@@ -1,6 +1,7 @@
 package main.scheduler;
 
-import main.common.DirectionalLamp;
+import main.common.Direction;
+import main.common.Instructions;
 import main.elevator.ElevatorButton;
 import main.floor.FloorButton;
 
@@ -9,6 +10,9 @@ import main.floor.FloorButton;
  */
 public class Scheduler {
 	
+	/** haha */
+	private Instructions instructions;
+	
 	/**
 	 * Default constructor
 	 */
@@ -16,24 +20,30 @@ public class Scheduler {
 		
 	}
 	
-	
 	/**
 	 * Function to send messages to floor
 	 * 
 	 */
-	void notifyFloor() {
+	public Scheduler() {
 		
 	}
 	
+	public void notifyFloor() {
+		
+	}
 	
 	/**
 	 * Function to send messages to elevator
 	 * 
 	 */
-	void notifyElevator() {
+	public void notifyElevator() {
 		
 	}
 	
+	public void setInstructions(Instructions i) {
+		instructions = i;
+	}
+
 	/**
 	 * Function that returns the value of an elevator button press (which floor has been requested)
 	 * 
@@ -48,8 +58,12 @@ public class Scheduler {
 	 * 
 	 * @return an enum value (UP/DOWN)
 	 */
-	private DirectionalLamp getFloorButtonPress(FloorButton floorButton) {
+	private Direction getFloorButtonPress(FloorButton floorButton) {
 		return floorButton.getDirectionalLamp();
 	}
 	
+	public String toString() {
+		return "Scheduler " + instructions.toString();
+		
+	}
 }
