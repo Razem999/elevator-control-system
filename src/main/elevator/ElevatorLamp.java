@@ -16,6 +16,13 @@ public class ElevatorLamp {
 	private Direction direction;
 	
 	/**
+	 * 
+	 */
+	ElevatorLamp() {
+		this.direction = Direction.UP;
+	}
+	
+	/**
 	 * Instantiates ElevatorLamp's direction.
 	 * @param direction A DirectionLamp used to handle the Elevator's direction state.
 	 */

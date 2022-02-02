@@ -10,8 +10,8 @@ public class ElevatorButton {
 	/**
 	 * Represents the available floors to travel
 	 */
-	private ArrayList<Integer> floors;
-	
+	private int floors;
+
 	/**
 	 * Represents the requested destination floor
 	 */
@@ -21,7 +21,7 @@ public class ElevatorButton {
 	 * Instantiates the panel of buttons in the elevator
 	 * @param floors The floors that are available to travel to
 	 */
-	public ElevatorButton(ArrayList<Integer> floors) {
+	public ElevatorButton(int floors) {
 		this.floors = floors;
 		buttonPressed = -1;
 	}
@@ -40,11 +40,11 @@ public class ElevatorButton {
 	 * @return Boolean indicating successful completion
 	 */
 	public boolean pressFloor(int floorNum) {
-		if(floorNum > floors.size()) {
+		if(floorNum > floors) {
 			return false;
 		}
 		
-		buttonPressed = floors.get(floorNum-1);
+		buttonPressed = floorNum;
 		return true;
 	}
 }

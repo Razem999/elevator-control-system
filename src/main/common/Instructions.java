@@ -31,7 +31,7 @@ public class Instructions {
 	}
 	
 	public String toString() {
-		return "Instructions: " + time.toString() + " " + direction + currentFloor;
+		return String.format("INS:[%s,%s,%d,%d]", time.toString(), direction,  currentFloor, destinationFloor);
 	}
 	
 	

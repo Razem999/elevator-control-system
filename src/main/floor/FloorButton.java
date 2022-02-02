@@ -12,10 +12,12 @@ public class FloorButton {
 	/** Indicates which direction the associated lamp is pointing */
 	private Direction arrows;
 	
-	public Direction getDirectionalLamp() {
-		return arrows;
+	/**
+	 * Constructor that defaults direction to UP
+	 */
+	public FloorButton() {
+		this.arrows = Direction.UP;
 	}
-	
 	
 	/**
 	 * Constructor that accepts a Direction value of UP/DOWN
@@ -23,6 +25,10 @@ public class FloorButton {
 	 */
 	public FloorButton(Direction arrows) {
 		this.arrows = arrows;
+	}
+	
+	public Direction getDirectionalLamp() {
+		return arrows;
 	}
 	
 	/**

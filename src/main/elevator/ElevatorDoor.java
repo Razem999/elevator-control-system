@@ -15,6 +15,13 @@ public class ElevatorDoor {
 	private boolean isDoorOpen;
 	
 	/**
+	 * 
+	 */
+	public ElevatorDoor() {
+		this.isDoorOpen = false;
+	}
+	
+	/**
 	 * Instantiates the elevator door with a specific position: open or closed
 	 * @param doorState Starting door position
 	 */

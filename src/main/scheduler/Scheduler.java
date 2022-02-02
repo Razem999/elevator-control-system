@@ -1,5 +1,7 @@
 package main.scheduler;
 
+import java.util.ArrayList;
+
 import main.common.Direction;
 import main.common.Instructions;
 import main.elevator.ElevatorButton;
@@ -11,20 +13,21 @@ import main.floor.FloorButton;
 public class Scheduler {
 	
 	/** haha */
-	private Instructions instructions;
+	private ArrayList<Instructions> queue;
+	private ArrayList<Instructions> completed;
 	
 	/**
 	 * Default constructor
 	 */
 	public Scheduler() {
-		
+		queue = new ArrayList<>();
+		completed = new ArrayList<>();
 	}
 	
 	/**
 	 * Function to send messages to floor
 	 * 
 	 */
-	
 	public void notifyFloor() {
 		
 	}
@@ -37,8 +40,29 @@ public class Scheduler {
 		
 	}
 	
-	public void setInstructions(Instructions i) {
-		instructions = i;
+	public synchronized void addInstructions(Instructions instructions) {
+		queue.add(instructions);
+		notifyAll();
+	}
+	
+	public boolean hasInstructions() {
+		return !queue.isEmpty();
+	}
+	
+	public Instructions popInstructions() {
+		while (!hasInstructions()) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		return queue.remove(0);
+	}
+	
+	public void completeInstructions(Instructions instrucions) {
+		completed.add(instrucions);
+		notifyAll();
 	}
 
 	/**
@@ -60,7 +84,6 @@ public class Scheduler {
 	}
 	
 	public String toString() {
-		return "Scheduler " + instructions.toString();
-		
+		return "Q:" + queue + "\nC:" + completed;
 	}
 }
