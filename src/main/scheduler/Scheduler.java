@@ -24,9 +24,6 @@ public class Scheduler {
 	 * Function to send messages to floor
 	 * 
 	 */
-	public Scheduler() {
-		
-	}
 	
 	public void notifyFloor() {
 		

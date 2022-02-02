@@ -4,13 +4,13 @@ import java.util.ArrayList;
 
 /**
  * Represents the panel of buttons that are available in an elevator
- *
  */
 public class ElevatorButton {
+
 	/**
 	 * Represents the available floors to travel
 	 */
-	private ArrayList<Integer> floors = new ArrayList<>();
+	private ArrayList<Integer> floors;
 	
 	/**
 	 * Represents the requested destination floor
