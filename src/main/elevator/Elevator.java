@@ -38,7 +38,7 @@ public class Elevator implements Runnable {
 				if (scheduler.hasInstructions()) {
 					instructions = scheduler.popInstructions();
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(1000); // might be TIME_BETWEEN_FLOORS x difference in Floors
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}

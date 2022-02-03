@@ -30,6 +30,14 @@ public class Instructions {
 		this.destinationFloor = Integer.parseInt(destinationFloor);
 	}
 	
+	public Instructions(String[] instructions) {
+		this(instructions[0], instructions[1], instructions[2], instructions[3]);
+	}
+	
+	public int getDestinationFloor() {
+		return destinationFloor;
+	}
+	
 	public String toString() {
 		return String.format("INS:[%s,%s,%d,%d]", time.toString(), direction,  currentFloor, destinationFloor);
 	}

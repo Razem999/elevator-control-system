@@ -43,11 +43,12 @@ public class Floor implements Runnable {
 	public void getInput() {
 		File input = new File("mockInput.txt"); // should be passed in?
 		try {
+			// TODO: Possibly change this so floor N will only add instructions with a destination value of N			
 			Scanner inputReader = new Scanner(input);
 			while (inputReader.hasNextLine()) {
 			  String line = inputReader.nextLine();
 			  String[] commands = line.split(" ");
-			  instructions.add(new Instructions(commands[0], commands[1], commands[2], commands[3]));
+			  instructions.add(new Instructions(commands));
 			}
 			inputReader.close();
 		} catch (FileNotFoundException e) {
@@ -62,7 +63,11 @@ public class Floor implements Runnable {
 		while (true) {
 			synchronized(scheduler) {
 				while (!instructions.isEmpty()) {
+					System.out.println("ELEV" + floorNumber + ": Sending instructions to the Scheduler");
 					scheduler.addInstructions(instructions.remove(0));
+				}
+				if (scheduler.notifyFloor(floorNumber)) {
+					System.out.println("ELEV" + floorNumber + ": An elevator has reached floor " + floorNumber);
 					System.out.println(scheduler);
 				}
 			}
