@@ -38,9 +38,10 @@ public class Floor implements Runnable {
 	}
 	
 	/**
-	 * 
+	 * Reads in a text input file to populate the instructions
 	 */
-	public void getInput() {
+	private void getInput() {
+		// TODO: Add function that checks that the starting floor is this floor, the ending floor is different, and the direction is correct
 		File input = new File("mockInput.txt"); // should be passed in?
 		try {
 			// TODO: Possibly change this so floor N will only add instructions with a destination value of N			
@@ -57,17 +58,17 @@ public class Floor implements Runnable {
 	}
 	
 	/**
-	 * 
+	 * Main loop to add all instructions to the scheduler and then wait on requests to complete
 	 */
 	public void run() {
 		while (true) {
 			synchronized(scheduler) {
 				while (!instructions.isEmpty()) {
-					System.out.println("ELEV" + floorNumber + ": Sending instructions to the Scheduler");
+					System.out.println("[FLOOR " + floorNumber + "]: Sending instructions to the Scheduler");
 					scheduler.addInstructions(instructions.remove(0));
 				}
 				if (scheduler.notifyFloor(floorNumber)) {
-					System.out.println("ELEV" + floorNumber + ": An elevator has reached floor " + floorNumber);
+					System.out.println("[FLOOR " + floorNumber + "]: An elevator has reached me");
 					System.out.println(scheduler);
 				}
 			}

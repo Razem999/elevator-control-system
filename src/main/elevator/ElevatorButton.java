@@ -38,9 +38,11 @@ public class ElevatorButton {
 	 * Presses button to indicate which floors to go to
 	 * @param floorNum Desired floor to travel to
 	 * @return Boolean indicating successful completion
+	 * 
+	 * TODO: Check that the buttonPressed is not the elevator's current floor
 	 */
 	public boolean pressFloor(int floorNum) {
-		if(floorNum > floors) {
+		if(floorNum < 1 || floorNum > floors) {
 			return false;
 		}
 		
