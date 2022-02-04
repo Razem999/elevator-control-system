@@ -4,14 +4,14 @@ import java.util.ArrayList;
 
 /**
  * Represents the panel of buttons that are available in an elevator
- *
  */
 public class ElevatorButton {
+
 	/**
 	 * Represents the available floors to travel
 	 */
-	private ArrayList<Integer> floors = new ArrayList<>();
-	
+	private int floors;
+
 	/**
 	 * Represents the requested destination floor
 	 */
@@ -21,7 +21,7 @@ public class ElevatorButton {
 	 * Instantiates the panel of buttons in the elevator
 	 * @param floors The floors that are available to travel to
 	 */
-	public ElevatorButton(ArrayList<Integer> floors) {
+	public ElevatorButton(int floors) {
 		this.floors = floors;
 		buttonPressed = -1;
 	}
@@ -38,13 +38,15 @@ public class ElevatorButton {
 	 * Presses button to indicate which floors to go to
 	 * @param floorNum Desired floor to travel to
 	 * @return Boolean indicating successful completion
+	 * 
+	 * TODO: Check that the buttonPressed is not the elevator's current floor
 	 */
 	public boolean pressFloor(int floorNum) {
-		if(floorNum > floors.size()) {
+		if(floorNum < 1 || floorNum > floors) {
 			return false;
 		}
 		
-		buttonPressed = floors.get(floorNum-1);
+		buttonPressed = floorNum;
 		return true;
 	}
 }
