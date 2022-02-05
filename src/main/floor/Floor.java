@@ -23,7 +23,8 @@ public class Floor implements Runnable {
 	private Scheduler scheduler;
 	/** Instructions sent from this Floor to the Scheduler */
 	private ArrayList<Instructions> instructions;
-	
+	/** Tracks time spent without processing instructions */
+	private int timeWithoutRequests = 0;
 	/**
 	 * Constructor that accepts a scheduler and floor number
 	 * @param scheduler
@@ -104,17 +105,19 @@ public class Floor implements Runnable {
 	 * Main loop to add all instructions to the scheduler and then wait on requests to complete
 	 */
 	public void run() {
-		while (true) {
+		while (timeWithoutRequests < 20000) {
 			synchronized(scheduler) {
 				while (!instructions.isEmpty()) {
 					System.out.println("[FLOOR " + floorNumber + "]: Sending instructions to the Scheduler");
 					scheduler.addInstructions(instructions.remove(0));
+					timeWithoutRequests = 0;
 				}
 				if (scheduler.notifyFloor(floorNumber)) {
 					System.out.println("[FLOOR " + floorNumber + "]: An elevator has reached me");
 					System.out.println(scheduler);
 				}
 			}
+			timeWithoutRequests += 1000;
 		}
 	}
 	
