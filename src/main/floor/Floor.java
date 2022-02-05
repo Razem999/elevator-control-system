@@ -42,7 +42,6 @@ public class Floor implements Runnable {
 	 * @param file - string file name of input
 	 */
 	private void getInput(String file) {
-		// TODO: Add function that checks that the starting floor is this floor, the ending floor is different, and the direction is correct
 		File input = new File(file); // should be passed in?
 		try {
 			// TODO: Possibly change this so floor N will only add instructions with a destination value of N			
@@ -50,7 +49,9 @@ public class Floor implements Runnable {
 			while (inputReader.hasNextLine()) {
 			  String line = inputReader.nextLine();
 			  String[] commands = line.split(" ");
-			  instructions.add(new Instructions(commands));
+			  if (verifyInput(commands)) {
+				  instructions.add(new Instructions(commands));
+			  }
 			}
 			inputReader.close();
 		} catch (FileNotFoundException e) {
@@ -58,6 +59,31 @@ public class Floor implements Runnable {
 		}
 	}
 	
+    /**
+     * Verifies that the input line is valid and returns true if it is, false if it is not 
+     * (i.e. current floor = destination, current floor != this floor, direction is wrong) 
+     * 
+     * @returns boolean
+     */
+    private boolean verifyInput(String[] commands) {
+		// if the current and destination floors are the same
+		if (commands[1] == commands[3]) {
+			return false;
+		}
+		              
+		// if the current floor of the command doesn't match this floor
+		if (Integer.valueOf(commands[1]) != this.floorNumber) {
+			return false;
+		}
+		               
+		// if the two previous checks passed, we just need to verify that the direction is correct
+		if (Integer.valueOf(commands[1]) < Integer.valueOf(floorNumber)) {
+			return commands[2] == "Up";
+		}
+		               
+		return commands[2] == "Down";
+	}
+
 	/**
 	 * Get getInput() for unit testing
 	 * @param filename
