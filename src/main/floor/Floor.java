@@ -34,15 +34,16 @@ public class Floor implements Runnable {
 		this.floorNumber = floorNumber;
 		this.scheduler = scheduler;
 		this.instructions = new ArrayList<>();
-		getInput();
+		getInput("mockInput.txt");
 	}
 	
 	/**
 	 * Reads in a text input file to populate the instructions
+	 * @param file - string file name of input
 	 */
-	private void getInput() {
+	private void getInput(String file) {
 		// TODO: Add function that checks that the starting floor is this floor, the ending floor is different, and the direction is correct
-		File input = new File("mockInput.txt"); // should be passed in?
+		File input = new File(file); // should be passed in?
 		try {
 			// TODO: Possibly change this so floor N will only add instructions with a destination value of N			
 			Scanner inputReader = new Scanner(input);
@@ -55,6 +56,14 @@ public class Floor implements Runnable {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * Get getInput() for unit testing
+	 * @param filename
+	 */
+	public void getGetInput(String file) {
+		getInput(file);
 	}
 	
 	/**

@@ -2,8 +2,15 @@ package test;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Scanner;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import main.common.Instructions;
 import main.floor.*;
 import main.scheduler.*;
 
@@ -29,7 +36,20 @@ public class FloorTest {
 	
 	@Test
 	void getInputFromFile() {
-		floor.getInput();
-		assertTrue(floor.getInstructions().get(0).getDestinationFloor() == 4);
+		ArrayList<Instructions> instructions = new ArrayList<>();;
+		floor.getGetInput("src/test/mockInstructions.txt");
+		File input = new File("src/test/mockInstructions.txt"); 
+		try {		
+			Scanner inputReader = new Scanner(input);
+			while (inputReader.hasNextLine()) {
+			  String line = inputReader.nextLine();
+			  String[] commands = line.split(" ");
+			  instructions.add(new Instructions(commands));
+			}
+			inputReader.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		assertTrue(floor.getInstructions().get(0).getDestinationFloor() == instructions.get(0).getDestinationFloor());
 	}
 }
