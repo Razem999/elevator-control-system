@@ -90,4 +90,12 @@ public class Floor implements Runnable {
 	public void setFloorNumber(int floor) {
 		floorNumber = floor;
 	}
+	
+	/**
+	 * Returns the instructions associated with this floor
+	 * @return arrayList - array of instructions 
+	 */
+	public ArrayList<Instructions> getInstructions() {
+		return instructions;
+	}
 }
