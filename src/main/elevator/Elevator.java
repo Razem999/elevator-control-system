@@ -16,6 +16,7 @@ public class Elevator implements Runnable {
 	
 	private Scheduler scheduler;
 	private int elevatorNumber;
+	private int timeWithoutInput;
 	private ElevatorButton buttons;
 	private ElevatorDoor door;
 	private ElevatorLamp lamp;
@@ -26,6 +27,7 @@ public class Elevator implements Runnable {
 	public Elevator(Scheduler scheduler, int elevatorNumber) {
 		this.scheduler = scheduler;
 		this.elevatorNumber = elevatorNumber;
+		this.timeWithoutInput = 0;
 		this.buttons = new ElevatorButton(Main.NUM_FLOORS);
 		this.door = new ElevatorDoor();
 		this.lamp = new ElevatorLamp();
@@ -33,7 +35,7 @@ public class Elevator implements Runnable {
 	}
 	
 	public void run() {
-		while(true) {
+		while(timeWithoutInput < 20000) {
 			synchronized(scheduler) {
 				if (scheduler.hasInstructions()) {
 					instructions = scheduler.popInstructions();
@@ -43,8 +45,10 @@ public class Elevator implements Runnable {
 						e.printStackTrace();
 					}
 					scheduler.completeInstructions(instructions);
+					timeWithoutInput = 0;
 					System.out.println(scheduler);
 				};
+				timeWithoutInput += 1000;
 			}
 		}
 	}
