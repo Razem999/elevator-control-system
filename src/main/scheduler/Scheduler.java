@@ -14,8 +14,13 @@ import main.floor.FloorButton;
  */
 public class Scheduler {
 
-	/** haha */
+	/**
+	 * Queue for the instructions
+	 */
 	private ArrayList<Instructions> queue;
+	/**
+	 * Arraylist of completed instructions
+	 */
 	private ArrayList<Instructions> completed;
 	private int numCompleted; // temporary variable for stopping program
 	
@@ -66,15 +71,27 @@ public class Scheduler {
 
 	}
 
+	/**
+	 * Adds instructions to the queue
+	 * @param instructions
+	 */
 	public synchronized void addInstructions(Instructions instructions) {
 		queue.add(instructions);
 		notifyAll();
 	}
 
+	/**
+	 * Checks if the queue is not empty with instructions
+	 * @return boolean
+	 */
 	public boolean hasInstructions() {
 		return !queue.isEmpty();
 	}
 
+	/**
+	 * Removes the instructions from the queue and returns it
+	 * @return the instruction that was removed
+	 */
 	public synchronized Instructions popInstructions() {
 		while (!hasInstructions()) {
 			try {
@@ -87,6 +104,10 @@ public class Scheduler {
 		return queue.remove(0);
 	}
 
+	/** 
+	 * Adds the given instructions to the listed of completed instructions
+	 * @param instructions
+	 */
 	public synchronized void completeInstructions(Instructions instructions) {
 		completed.add(instructions);
 		notifyAll();
@@ -112,6 +133,10 @@ public class Scheduler {
 		return floorButton.getDirectionalLamp();
 	}
 
+	/**
+	 * Pretty string to show the scheduler's queue and completed arrays
+	 * @return string
+	 */
 	public String toString() {
 		return "SCHED:\nQ:" + queue + "\nC:" + completed + "\n";
 	}

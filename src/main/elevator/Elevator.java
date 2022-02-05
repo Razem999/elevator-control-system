@@ -14,16 +14,44 @@ public class Elevator implements Runnable {
 	
 	private static final float TIME_BETWEEN_FLOORS = 13;
 	
+	/**
+	 * Scheduler reference for contact
+	 */
 	private Scheduler scheduler;
+	/**
+	 * Assigned elevator number
+	 */
 	private int elevatorNumber;
+	/**
+	 * Time passed for the thread
+	 */
 	private int timeWithoutInput;
+	/**
+	 * Reference of the Elevator Buttons
+	 */
 	private ElevatorButton buttons;
+	/**
+	 * Reference of the Elevator door
+	 */
 	private ElevatorDoor door;
+	/**
+	 * Reference of the Elevator lamps
+	 */
 	private ElevatorLamp lamp;
+	/**
+	 * Reference of the Elevator motor
+	 */
 	private ElevatorMotor motor;
+	/**
+	 * Instructions an elevator would take
+	 */
 	private Instructions instructions;
 	
-	
+	/**
+	 * Initialize an elevator that takes in a scheduler and elevator
+	 * @param scheduler
+	 * @param elevatorNumber
+	 */
 	public Elevator(Scheduler scheduler, int elevatorNumber) {
 		this.scheduler = scheduler;
 		this.elevatorNumber = elevatorNumber;
@@ -34,6 +62,9 @@ public class Elevator implements Runnable {
 		this.motor = new ElevatorMotor(TIME_BETWEEN_FLOORS);
 	}
 	
+	/**
+	 * Runs the Elevator thread that receives instructions from the scheduler and completes the instructions
+	 */
 	public void run() {
 		while(timeWithoutInput < 20000) {
 			synchronized(scheduler) {
