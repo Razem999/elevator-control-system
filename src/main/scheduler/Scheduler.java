@@ -1,6 +1,7 @@
 package main.scheduler;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import main.common.Direction;
 import main.common.Instructions;
@@ -16,15 +17,25 @@ public class Scheduler {
 	/** haha */
 	private ArrayList<Instructions> queue;
 	private ArrayList<Instructions> completed;
-
+	private int numCompleted; // temporary variable for stopping program
+	
 	/**
 	 * Default constructor
 	 */
 	public Scheduler() {
 		queue = new ArrayList<>();
 		completed = new ArrayList<>();
+		numCompleted = 0;
 	}
+	
+	/**
+	 * Getter for numCompleted
+	 */
 
+	public int getNumCompleted() {
+		return numCompleted;
+	}
+	
 	/**
 	 * Function to send messages to floor
 	 * 
@@ -38,15 +49,13 @@ public class Scheduler {
 			}
 		}
 		
-		boolean elevatorHasReachedFloor = false;
+//		boolean elevatorHasReachedFloor = false;
+		// for now, just return true and pop one element off of completed
+		// once other logic and more floors are added, we can handle those cases
 		
-		for (Instructions i : completed) {
-			if (i.getDestinationFloor() == floorNumber) {
-				completed.remove(i);
-				elevatorHasReachedFloor = true;
-			}
-		}
-		return elevatorHasReachedFloor;
+		completed.remove(0);
+		numCompleted += 1;
+		return true;
 	}
 
 	/**

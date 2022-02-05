@@ -105,7 +105,7 @@ public class Floor implements Runnable {
 	 * Main loop to add all instructions to the scheduler and then wait on requests to complete
 	 */
 	public void run() {
-		while (timeWithoutRequests < 20000) {
+		while (scheduler.getNumCompleted() < 3) {
 			synchronized(scheduler) {
 				while (!instructions.isEmpty()) {
 					System.out.println("[FLOOR " + floorNumber + "]: Sending instructions to the Scheduler");
@@ -113,11 +113,11 @@ public class Floor implements Runnable {
 					timeWithoutRequests = 0;
 				}
 				if (scheduler.notifyFloor(floorNumber)) {
-					System.out.println("[FLOOR " + floorNumber + "]: An elevator has reached me");
+					System.out.println("[FLOOR " + floorNumber + "]: Received message from elevator");
+//					System.out.println("[FLOOR " + floorNumber + "]: An elevator has reached me");
 					System.out.println(scheduler);
 				}
 			}
-			timeWithoutRequests += 1000;
 		}
 	}
 	
