@@ -12,6 +12,9 @@ import main.scheduler.Scheduler;
 public class SchedulerTest {
 	Scheduler scheduler;
 	Floor floor;
+	/**
+	 * Set up a scheduler and floor object to test with
+	 */
 	@BeforeEach
 	void setup() {
 		scheduler = new Scheduler();

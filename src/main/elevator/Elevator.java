@@ -48,5 +48,13 @@ public class Elevator implements Runnable {
 			}
 		}
 	}
+	
+	/**
+	 * Getting the associated elevator number
+	 * @return int - The assigned elevator number
+	 */
+	public int getElevatorNumber() {
+		return this.elevatorNumber;
+	}
 
 }

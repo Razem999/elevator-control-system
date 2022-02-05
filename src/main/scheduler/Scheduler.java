@@ -29,7 +29,7 @@ public class Scheduler {
 	 * Function to send messages to floor
 	 * 
 	 */
-	public boolean notifyFloor(int floorNumber) {
+	public synchronized boolean notifyFloor(int floorNumber) {
 		while (completed.isEmpty()) {
 			try {
 				wait();

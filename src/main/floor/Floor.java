@@ -67,7 +67,7 @@ public class Floor implements Runnable {
      */
     private boolean verifyInput(String[] commands) {
 		// if the current and destination floors are the same
-		if (commands[1] == commands[3]) {
+		if (commands[1].equals(commands[3])) {
 			return false;
 		}
 		              
@@ -77,11 +77,11 @@ public class Floor implements Runnable {
 		}
 		               
 		// if the two previous checks passed, we just need to verify that the direction is correct
-		if (Integer.valueOf(commands[1]) < Integer.valueOf(floorNumber)) {
-			return commands[2] == "Up";
+		if (Integer.valueOf(commands[1]) < Integer.valueOf(commands[3])) {
+			return commands[2].equals("Up");
 		}
-		               
-		return commands[2] == "Down";
+
+		return commands[2].equals("Down");
 	}
 
 	/**
@@ -90,6 +90,14 @@ public class Floor implements Runnable {
 	 */
 	public void getGetInput(String file) {
 		getInput(file);
+	}
+	
+	/**
+	 * Get verifyInput() for unit testing
+	 * @param commands
+	 */
+	public boolean getVerifyInput(String[] commands) {
+		return verifyInput(commands);
 	}
 	
 	/**

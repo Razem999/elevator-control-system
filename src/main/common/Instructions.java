@@ -34,8 +34,16 @@ public class Instructions {
 		this(instructions[0], instructions[1], instructions[2], instructions[3]);
 	}
 	
+	public Date getTime() {
+		return time;
+	}
+	
 	public int getDestinationFloor() {
 		return destinationFloor;
+	}
+	
+	public int getCurrentFloor() {
+		return currentFloor;
 	}
 	
 	public String toString() {
