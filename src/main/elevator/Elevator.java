@@ -46,6 +46,31 @@ public class Elevator implements Runnable {
 	 * Instructions an elevator would take
 	 */
 	private Instructions instructions;
+	private ElevatorState elevatorState;
+	
+	private enum ElevatorState {
+
+		Idle {
+			public ElevatorState nextState() {
+				return Moving;
+			}
+		},
+		
+		Moving {
+			public ElevatorState nextState() {
+				return Arriving;
+			}
+		},
+
+		Arriving {
+			public ElevatorState nextState() {
+				return Idle;
+			}
+		};
+		
+		public abstract ElevatorState nextState();
+	}
+	
 	
 	/**
 	 * Initialize an elevator that takes in a scheduler and elevator
@@ -60,6 +85,8 @@ public class Elevator implements Runnable {
 		this.door = new ElevatorDoor();
 		this.lamp = new ElevatorLamp();
 		this.motor = new ElevatorMotor(TIME_BETWEEN_FLOORS);
+		elevatorState = ElevatorState.Idle;
+		elevatorState = elevatorState.openDoors();
 	}
 	
 	/**
