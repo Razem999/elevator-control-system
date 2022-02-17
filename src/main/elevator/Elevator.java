@@ -46,10 +46,15 @@ public class Elevator implements Runnable {
 	 * Instructions an elevator would take
 	 */
 	private Instructions instructions;
+	/**
+	 * Keeps track of the current state of the elevator
+	 */
 	private ElevatorState elevatorState;
 	
+	/**
+	 * Elevator state machine definition
+	 */
 	private enum ElevatorState {
-
 		Idle {
 			public ElevatorState nextState() {
 				return Moving;
@@ -71,7 +76,6 @@ public class Elevator implements Runnable {
 		public abstract ElevatorState nextState();
 	}
 	
-	
 	/**
 	 * Initialize an elevator that takes in a scheduler and elevator
 	 * @param scheduler
@@ -86,7 +90,6 @@ public class Elevator implements Runnable {
 		this.lamp = new ElevatorLamp();
 		this.motor = new ElevatorMotor(TIME_BETWEEN_FLOORS);
 		elevatorState = ElevatorState.Idle;
-		elevatorState = elevatorState.openDoors();
 	}
 	
 	/**
@@ -95,18 +98,24 @@ public class Elevator implements Runnable {
 	public void run() {
 		while(timeWithoutInput < 20000) {
 			synchronized(scheduler) {
-				if (scheduler.hasInstructions()) {
-					instructions = scheduler.popInstructions();
-					try {
-						Thread.sleep(1000); // might be TIME_BETWEEN_FLOORS x difference in Floors
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					scheduler.completeInstructions(instructions);
-					timeWithoutInput = 0;
-					System.out.println(scheduler);
-				};
-				timeWithoutInput += 1000;
+				switch (elevatorState) {
+					case Idle:
+						instructions = scheduler.popInstructions();
+						elevatorState = ElevatorState.Moving;
+						break;
+					case Moving:
+						try {
+							Thread.sleep(1000); // might be TIME_BETWEEN_FLOORS x difference in Floors
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						elevatorState = ElevatorState.Arriving;
+						break;
+					case Arriving:
+						scheduler.completeInstructions(instructions);
+						elevatorState = ElevatorState.Idle;
+						break;
+				}
 			}
 		}
 	}
