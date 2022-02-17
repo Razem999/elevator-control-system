@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import main.common.Direction;
 import main.common.Instructions;
+import main.common.Logger;
 import main.elevator.ElevatorButton;
 import main.floor.FloorButton;
 
@@ -13,7 +14,8 @@ import main.floor.FloorButton;
  * elevator components
  */
 public class Scheduler {
-
+	/** logger instance to handle console logging */
+	private Logger logger;
 	/**
 	 * Queue for the instructions
 	 */
@@ -31,6 +33,8 @@ public class Scheduler {
 		queue = new ArrayList<>();
 		completed = new ArrayList<>();
 		numCompleted = 0;
+		this.logger = new Logger("SCHED");
+		logger.log("Starting...");
 	}
 	
 	/**
@@ -57,8 +61,10 @@ public class Scheduler {
 //		boolean elevatorHasReachedFloor = false;
 		// for now, just return true and pop one element off of completed
 		// once other logic and more floors are added, we can handle those cases
-		
-		completed.remove(0);
+		logger.log("Removing instructions from completed...");
+		logger.log("Instructions removed: " + completed.remove(0));
+		logger.log("Current state: \n" + this);
+		logger.log("Notifying floor " + floorNumber);
 		numCompleted += 1;
 		return true;
 	}
@@ -76,7 +82,11 @@ public class Scheduler {
 	 * @param instructions
 	 */
 	public synchronized void addInstructions(Instructions instructions) {
+		logger.log("Adding instructions to queue...");
 		queue.add(instructions);
+		logger.log("Instructions added: " + instructions);
+		logger.log("Current state: \n" + this);
+		logger.log("Notifying all...\n");
 		notifyAll();
 	}
 
@@ -100,8 +110,14 @@ public class Scheduler {
 				e.printStackTrace();
 			}
 		}
+		logger.log("Removing instructions from queue...");
+		Instructions removed = queue.remove(0);
+		logger.log("Removed instructions: " + removed);
+		logger.log("Current state: \n" + this);
+		logger.log("Notifying all...");
 		notifyAll();
-		return queue.remove(0);
+		logger.log("Sending instructions to elevator\n");
+		return removed;
 	}
 
 	/** 
@@ -109,7 +125,11 @@ public class Scheduler {
 	 * @param instructions
 	 */
 	public synchronized void completeInstructions(Instructions instructions) {
+		logger.log("Adding instructions to completed...");
 		completed.add(instructions);
+		logger.log("Instructions added: " + instructions);
+		logger.log("Current state: \n" + this);
+		logger.log("Notifying all...\n");
 		notifyAll();
 	}
 
@@ -138,6 +158,6 @@ public class Scheduler {
 	 * @return string
 	 */
 	public String toString() {
-		return "SCHED:\nQ:" + queue + "\nC:" + completed + "\n";
+		return "Q:" + queue + "\nC:" + completed;
 	}
 }
