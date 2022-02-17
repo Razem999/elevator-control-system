@@ -21,11 +21,11 @@ public class Main {
 	public static void main(String[] args) {
 		// TODO make and start 3 threads
 		Scheduler scheduler = new Scheduler();
-		Thread floor = new Thread(new Floor(scheduler, 4), "Floor 4");
 		Thread elevator = new Thread(new Elevator(scheduler, 0), "Elevator 0");
+		Thread floor = new Thread(new Floor(scheduler, 4), "Floor 4");
 
-		floor.start();
 		elevator.start();
+		floor.start();
 	}
 
 }
