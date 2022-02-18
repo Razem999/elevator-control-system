@@ -81,7 +81,7 @@ public class Scheduler {
 	 * 
 	 */
 	public synchronized boolean notifyFloor(int floorNumber) {
-		while (completed.isEmpty()) {
+		while (!hasCompleted()) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -129,6 +129,14 @@ public class Scheduler {
 	 */
 	public boolean hasInstructions() {
 		return !queue.isEmpty();
+	}
+	
+	/**
+	 * Checks if the completed queue is not empty with instructions
+	 * @return boolean
+	 */
+	public boolean hasCompleted() {
+		return !completed.isEmpty();
 	}
 
 	/**
