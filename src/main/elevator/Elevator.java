@@ -13,7 +13,7 @@ import main.scheduler.Scheduler;
  */
 public class Elevator implements Runnable {
 	
-	private static final float TIME_BETWEEN_FLOORS = 13;
+	private static final int TIME_BETWEEN_FLOORS = 500;
 	
 	/** logger instance to handle console logging */
 	private Logger logger;
@@ -50,6 +50,10 @@ public class Elevator implements Runnable {
 	 * Keeps track of the current state of the elevator
 	 */
 	private ElevatorState elevatorState;
+	/**
+	 * The last floor the elevator has been on
+	 */
+	private int currentFloor;
 	
 	/**
 	 * Elevator state machine definition
@@ -61,7 +65,7 @@ public class Elevator implements Runnable {
 			}
 			public String toString() {
 				return "IDLE";
-			}
+			}			
 		},
 		
 		Moving {
@@ -80,7 +84,17 @@ public class Elevator implements Runnable {
 			public String toString() {
 				return "ARRIVING";
 			}
-		};
+		},
+//		Currently commented out Error state, looks like erroring may be an action, not a state
+//		Error {
+//			public ElevatorState nextState() {
+//				return Idle;
+//			}
+//			public String toString() {
+//				return "ERROR";
+//			}
+//		}
+		;
 		
 		public abstract ElevatorState nextState();
 		public abstract String toString();
@@ -100,6 +114,7 @@ public class Elevator implements Runnable {
 		this.motor = new ElevatorMotor(TIME_BETWEEN_FLOORS);
 		elevatorState = ElevatorState.Idle;
 		this.logger = new Logger("ELEV " + elevatorNumber);
+		currentFloor = 0;
 		logger.log("Starting...");
 	}
 	
@@ -113,6 +128,8 @@ public class Elevator implements Runnable {
 				switch (elevatorState) {
 					case Idle:
 						
+						// if there are errors to check for, they should be done at the start of every state's case
+						
 						logger.log("Looking for instructions from scheduler...");
 						instructions = scheduler.popInstructions();
 						logger.log("Received instructions from scheduler");
@@ -121,17 +138,30 @@ public class Elevator implements Runnable {
 						break;
 
 					case Moving:
-
-						logger.log("Moving to destination floor");
+						int destinationFloor = instructions.getDestinationFloor();
+						
+						logger.log("Moving from floor " + currentFloor + " to destination floor " + destinationFloor);
+						
+						System.out.println("LOOKIE HERE: " + destinationFloor + " " + currentFloor);
+						
+						if (destinationFloor == currentFloor)
+						{
+							logger.log("Arriving at destination floor " + destinationFloor);
+							elevatorState = ElevatorState.Arriving;							
+							break;
+						}
+						
+						
+						
 						try {
-							Thread.sleep(2000); // might be TIME_BETWEEN_FLOORS x difference in Floors
+							Thread.sleep(TIME_BETWEEN_FLOORS);
+							currentFloor =  destinationFloor > currentFloor ? currentFloor + 1 : currentFloor - 1;
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
-						logger.log("Arriving at destination floor");
-
-						elevatorState = ElevatorState.Arriving;
+						
 						break;
+
 						
 					case Arriving:
 
@@ -152,6 +182,6 @@ public class Elevator implements Runnable {
 	 */
 	public int getElevatorNumber() {
 		return this.elevatorNumber;
-	}
+	}	
 
 }
