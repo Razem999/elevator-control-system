@@ -13,7 +13,7 @@ import main.scheduler.Scheduler;
  */
 public class Elevator implements Runnable {
 	
-	private static final float TIME_BETWEEN_FLOORS = 13;
+	private static final int TIME_BETWEEN_FLOORS = 500;
 	
 	/** logger instance to handle console logging */
 	private Logger logger;
@@ -46,6 +46,59 @@ public class Elevator implements Runnable {
 	 * Instructions an elevator would take
 	 */
 	private Instructions instructions;
+	/**
+	 * Keeps track of the current state of the elevator
+	 */
+	private ElevatorState elevatorState;
+	/**
+	 * The last floor the elevator has been on
+	 */
+	private int currentFloor;
+	
+	/**
+	 * Elevator state machine definition
+	 */
+	private enum ElevatorState {
+		Idle {
+			public ElevatorState nextState() {
+				return Moving;
+			}
+			public String toString() {
+				return "IDLE";
+			}			
+		},
+		
+		Moving {
+			public ElevatorState nextState() {
+				return Arriving;
+			}
+			public String toString() {
+				return "MOVING";
+			}
+		},
+
+		Arriving {
+			public ElevatorState nextState() {
+				return Idle;
+			}
+			public String toString() {
+				return "ARRIVING";
+			}
+		},
+//		Currently commented out Error state, looks like erroring may be an action, not a state
+//		Error {
+//			public ElevatorState nextState() {
+//				return Idle;
+//			}
+//			public String toString() {
+//				return "ERROR";
+//			}
+//		}
+		;
+		
+		public abstract ElevatorState nextState();
+		public abstract String toString();
+	}
 	
 	/**
 	 * Initialize an elevator that takes in a scheduler and elevator
@@ -59,7 +112,9 @@ public class Elevator implements Runnable {
 		this.door = new ElevatorDoor();
 		this.lamp = new ElevatorLamp();
 		this.motor = new ElevatorMotor(TIME_BETWEEN_FLOORS);
+		elevatorState = ElevatorState.Idle;
 		this.logger = new Logger("ELEV " + elevatorNumber);
+		currentFloor = 0;
 		logger.log("Starting...");
 	}
 	
@@ -69,21 +124,54 @@ public class Elevator implements Runnable {
 	public void run() {
 		while(true) {
 			synchronized(scheduler) {
-				if (scheduler.hasInstructions()) {
-					logger.log("Looking for instructions from scheduler...");
-					instructions = scheduler.popInstructions();
-					logger.log("Received instructions from scheduler");
-					logger.log("Moving to destination floor");
-					try {
-						Thread.sleep(1000); // might be TIME_BETWEEN_FLOORS x difference in Floors
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					logger.log("Arrived at destination floor");
-					logger.log("Completed instruction " + instructions);
-					logger.log("Notifying scheduler...");
-					scheduler.completeInstructions(instructions);
-				};
+				logger.log("Current state: " + elevatorState);
+				switch (elevatorState) {
+					case Idle:
+						
+						// if there are errors to check for, they should be done at the start of every state's case
+						
+						logger.log("Looking for instructions from scheduler...");
+						instructions = scheduler.popInstructions();
+						logger.log("Received instructions from scheduler");
+						
+						elevatorState = ElevatorState.Moving;
+						break;
+
+					case Moving:
+						int destinationFloor = instructions.getDestinationFloor();
+						
+						logger.log("Moving from floor " + currentFloor + " to destination floor " + destinationFloor);
+						
+						System.out.println("LOOKIE HERE: " + destinationFloor + " " + currentFloor);
+						
+						if (destinationFloor == currentFloor)
+						{
+							logger.log("Arriving at destination floor " + destinationFloor);
+							elevatorState = ElevatorState.Arriving;							
+							break;
+						}
+						
+						
+						
+						try {
+							Thread.sleep(TIME_BETWEEN_FLOORS);
+							currentFloor =  destinationFloor > currentFloor ? currentFloor + 1 : currentFloor - 1;
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						
+						break;
+
+						
+					case Arriving:
+
+						logger.log("Completed instruction " + instructions);
+						logger.log("Notifying scheduler...");
+						scheduler.completeInstructions(instructions);
+						
+						elevatorState = ElevatorState.Idle;
+						break;
+				}
 			}
 		}
 	}

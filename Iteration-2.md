@@ -6,15 +6,16 @@ Iteration 2 report
 
 ### Bill
 
-- TBD
+- Scheduler state machine implementation
 
 ### Deen
 
-- Elevator state machine refactor
+- Elevator state machine implementation
+- Elevator state machine diagram
 
 ### James
 
-- TBD
+- Scheduler state machine implementation
 
 ### Razem
 
@@ -25,5 +26,7 @@ Iteration 2 report
 
 ### Vinh
 
-- Logger class
-- Elevator state machine refactor
+- Logger class and class refactor to use logger
+- Fix program exit condition
+- Elevator state machine implementation
+- Elevator state machine implementation
