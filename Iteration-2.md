@@ -16,6 +16,7 @@ Iteration 2 report
 ### James
 
 - Scheduler state machine implementation
+- Scheduler unit tests
 
 ### Razem
 
@@ -23,10 +24,10 @@ Iteration 2 report
 - UML Sequence Diagram
 - Elevator state machine diagram
 - Scheduler state machine diagram
+- Scheduler state machine implementation
 
 ### Vinh
 
 - Logger class and class refactor to use logger
 - Fix program exit condition
-- Elevator state machine implementation
 - Elevator state machine implementation
