@@ -182,6 +182,6 @@ public class Elevator implements Runnable {
 	 */
 	public int getElevatorNumber() {
 		return this.elevatorNumber;
-	}	
+	}
 
 }
