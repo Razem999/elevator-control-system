@@ -43,7 +43,6 @@ public class SchedulerTest {
 	void testPopInstructions() {
 		Instructions instruction1 = new Instructions("14:05:15.0", "3", "Up", "4");
 		scheduler.addInstructions(instruction1);
-		
 		scheduler.popInstructions();		
 		assertFalse(scheduler.hasInstructions());
 	}
