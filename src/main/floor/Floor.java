@@ -9,12 +9,15 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import main.common.Instructions;
+import main.common.Logger;
 import main.scheduler.Scheduler;
 
 /**
  * Class to represent a floor subsystem
  */
 public class Floor implements Runnable {
+	/** logger instance to handle console logging */
+	private Logger logger;
 	/** Button for users to interact with */
 	private FloorButton button;
 	/** Associated floor number */
@@ -25,6 +28,7 @@ public class Floor implements Runnable {
 	private ArrayList<Instructions> instructions;
 	/** Tracks time spent without processing instructions */
 	private int timeWithoutRequests = 0;
+	
 	/**
 	 * Constructor that accepts a scheduler and floor number
 	 * @param scheduler
@@ -35,6 +39,8 @@ public class Floor implements Runnable {
 		this.floorNumber = floorNumber;
 		this.scheduler = scheduler;
 		this.instructions = new ArrayList<>();
+		this.logger = new Logger("FLOOR " + floorNumber);
+		logger.log("Starting...");
 		getInput("mockInput.txt");
 	}
 	
@@ -43,6 +49,7 @@ public class Floor implements Runnable {
 	 * @param file - string file name of input
 	 */
 	private void getInput(String file) {
+		logger.log("Reading input file...");
 		File input = new File(file); // should be passed in?
 		try {
 			// TODO: Possibly change this so floor N will only add instructions with a destination value of N			
@@ -54,6 +61,7 @@ public class Floor implements Runnable {
 				  instructions.add(new Instructions(commands));
 			  }
 			}
+			logger.log("Added all instructions to floor");
 			inputReader.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -108,17 +116,17 @@ public class Floor implements Runnable {
 		while (scheduler.getNumCompleted() < 3) {
 			synchronized(scheduler) {
 				while (!instructions.isEmpty()) {
-					System.out.println("[FLOOR " + floorNumber + "]: Sending instructions to the Scheduler");
+					logger.log("Sending instructions to scheduler...");
 					scheduler.addInstructions(instructions.remove(0));
 					timeWithoutRequests = 0;
 				}
 				if (scheduler.notifyFloor(floorNumber)) {
-					System.out.println("[FLOOR " + floorNumber + "]: Received message from elevator");
-//					System.out.println("[FLOOR " + floorNumber + "]: An elevator has reached me");
-					System.out.println(scheduler);
+					logger.log("Received message from scheduler\n");
 				}
 			}
 		}
+		logger.log("*** All requests finished. Exiting... ***");
+		System.exit(0);
 	}
 	
 	
