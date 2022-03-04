@@ -58,7 +58,7 @@ public class Elevator implements Runnable {
 	/**
 	 * Elevator state machine definition
 	 */
-	private enum ElevatorState {
+	public enum ElevatorState {
 		Idle {
 			public ElevatorState nextState() {
 				return Moving;
@@ -125,18 +125,6 @@ public class Elevator implements Runnable {
 	
 	public void setState(ElevatorState state) {
 		elevatorState = state;
-	}
-	
-	public ElevatorState getIdle() {
-		return ElevatorState.Idle;
-	}
-	
-	public ElevatorState getMoving() {
-		return ElevatorState.Moving;
-	}
-	
-	public ElevatorState getArriving() {
-		return ElevatorState.Arriving;
 	}
 	
 	/**

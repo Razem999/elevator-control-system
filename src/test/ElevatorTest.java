@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import main.common.Instructions;
 import main.elevator.Elevator;
+import main.elevator.Elevator.ElevatorState;
 import main.scheduler.Scheduler;
 
 /**
@@ -41,7 +42,7 @@ public class ElevatorTest {
 	 */
 	@Test
 	void TestIdleState() {
-		assertTrue(elevator.getState() == elevator.getIdle());
+		assertTrue(elevator.getState() == ElevatorState.Idle);
 	}
 	
 	/**
@@ -49,8 +50,8 @@ public class ElevatorTest {
 	 */
 	@Test
 	void TestMovingState() {
-		elevator.setState(elevator.getMoving());
-		assertTrue(elevator.getState() == elevator.getMoving());
+		elevator.setState(elevator.getState().nextState());
+		assertTrue(elevator.getState() == ElevatorState.Moving);
 	}
 	
 	/**
@@ -58,7 +59,8 @@ public class ElevatorTest {
 	 */
 	@Test
 	void TestArrivingState() {
-		elevator.setState(elevator.getArriving());
-		assertTrue(elevator.getState() == elevator.getArriving());
+		elevator.setState(elevator.getState().nextState());
+		elevator.setState(elevator.getState().nextState());
+		assertTrue(elevator.getState() == ElevatorState.Arriving);
 	}
 }
