@@ -33,7 +33,7 @@ public class ElevatorTest {
 	 * Test for seeing if getting elevator number is correct
 	 */
 	@Test
-	void ElevatorNumberTest() {
+	void elevatorNumberTest() {
 		assertTrue(elevator.getElevatorNumber() == 4);
 	}
 	
@@ -41,7 +41,7 @@ public class ElevatorTest {
 	 * Test that the initial state of the elevator is arriving
 	 */
 	@Test
-	void TestIdleState() {
+	void testIdleState() {
 		assertTrue(elevator.getState() == ElevatorState.Idle);
 	}
 	
@@ -49,7 +49,7 @@ public class ElevatorTest {
 	 * Test that the ability to set the state to moving
 	 */
 	@Test
-	void TestMovingState() {
+	void testMovingState() {
 		elevator.setState(elevator.getState().nextState());
 		assertTrue(elevator.getState() == ElevatorState.Moving);
 	}
@@ -58,7 +58,7 @@ public class ElevatorTest {
 	 * Test that the ability to set the state to arriving
 	 */
 	@Test
-	void TestArrivingState() {
+	void testArrivingState() {
 		elevator.setState(elevator.getState().nextState());
 		elevator.setState(elevator.getState().nextState());
 		assertTrue(elevator.getState() == ElevatorState.Arriving);

@@ -30,7 +30,7 @@ public class CommonTest {
 	 * Test to see if getting time gets the correct time
 	 */
 	@Test
-	void CheckTime() {
+	void checkTime() {
 		Date testTime;
 		
 		try {
@@ -45,7 +45,7 @@ public class CommonTest {
 	 * Test for getting correct destination floor
 	 */
 	@Test
-	void CheckDestinationFloor() {
+	void checkDestinationFloor() {
 		assertTrue(instruction.getDestinationFloor() == 4);
 	}
 	
@@ -53,7 +53,7 @@ public class CommonTest {
 	 * Test for getting correct current floor
 	 */
 	@Test
-	void CheckCurrentFloor() {
+	void checkCurrentFloor() {
 		assertTrue(instruction.getCurrentFloor() == 3);
 	}
 	
@@ -61,7 +61,7 @@ public class CommonTest {
 	 * Test for seeing if printing instructions leads to correct string
 	 */
 	@Test
-	void CheckString() {
+	void checkString() {
 		assertTrue(instruction.toString().equals("INS:[Thu Jan 01 14:00:15 EST 1970,UP,3,4]"));
 	}
 }
