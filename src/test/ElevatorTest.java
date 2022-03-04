@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import main.common.Instructions;
 import main.elevator.Elevator;
 import main.scheduler.Scheduler;
 
@@ -33,5 +34,31 @@ public class ElevatorTest {
 	@Test
 	void ElevatorNumberTest() {
 		assertTrue(elevator.getElevatorNumber() == 4);
+	}
+	
+	/**
+	 * Test that the initial state of the elevator is arriving
+	 */
+	@Test
+	void TestIdleState() {
+		assertTrue(elevator.getState() == elevator.getIdle());
+	}
+	
+	/**
+	 * Test that the ability to set the state to moving
+	 */
+	@Test
+	void TestMovingState() {
+		elevator.setState(elevator.getMoving());
+		assertTrue(elevator.getState() == elevator.getMoving());
+	}
+	
+	/**
+	 * Test that the ability to set the state to arriving
+	 */
+	@Test
+	void TestArrivingState() {
+		elevator.setState(elevator.getArriving());
+		assertTrue(elevator.getState() == elevator.getArriving());
 	}
 }

@@ -118,6 +118,27 @@ public class Elevator implements Runnable {
 		logger.log("Starting...");
 	}
 	
+	// getters/setters for unit tests
+	public ElevatorState getState() {
+		return elevatorState;
+	}
+	
+	public void setState(ElevatorState state) {
+		elevatorState = state;
+	}
+	
+	public ElevatorState getIdle() {
+		return ElevatorState.Idle;
+	}
+	
+	public ElevatorState getMoving() {
+		return ElevatorState.Moving;
+	}
+	
+	public ElevatorState getArriving() {
+		return ElevatorState.Arriving;
+	}
+	
 	/**
 	 * Runs the Elevator thread that receives instructions from the scheduler and completes the instructions
 	 */
@@ -150,8 +171,6 @@ public class Elevator implements Runnable {
 							elevatorState = ElevatorState.Arriving;							
 							break;
 						}
-						
-						
 						
 						try {
 							Thread.sleep(TIME_BETWEEN_FLOORS);
