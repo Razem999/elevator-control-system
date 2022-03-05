@@ -58,7 +58,7 @@ public class Elevator implements Runnable {
 	/**
 	 * Elevator state machine definition
 	 */
-	private enum ElevatorState {
+	public enum ElevatorState {
 		Idle {
 			public ElevatorState nextState() {
 				return Moving;
@@ -118,6 +118,15 @@ public class Elevator implements Runnable {
 		logger.log("Starting...");
 	}
 	
+	// getters/setters for unit tests
+	public ElevatorState getState() {
+		return elevatorState;
+	}
+	
+	public void setState(ElevatorState state) {
+		elevatorState = state;
+	}
+	
 	/**
 	 * Runs the Elevator thread that receives instructions from the scheduler and completes the instructions
 	 */
@@ -150,8 +159,6 @@ public class Elevator implements Runnable {
 							elevatorState = ElevatorState.Arriving;							
 							break;
 						}
-						
-						
 						
 						try {
 							Thread.sleep(TIME_BETWEEN_FLOORS);

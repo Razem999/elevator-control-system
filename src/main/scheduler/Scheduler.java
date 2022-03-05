@@ -71,9 +71,14 @@ public class Scheduler {
 	/**
 	 * Getter for numCompleted
 	 */
-
 	public int getNumCompleted() {
 		return numCompleted;
+	}
+	
+	
+	// getter for unit tests
+	public SchedulerStates getState() {
+		return currState;
 	}
 	
 	/**

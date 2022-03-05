@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import main.common.Instructions;
 import main.floor.Floor;
 import main.scheduler.Scheduler;
+import main.scheduler.Scheduler.SchedulerStates;
 
 /**
  * Tests for Scheduler Class
@@ -26,7 +27,7 @@ public class SchedulerTest {
 	}
 	
 	/**
-	 * Verify that addInstructions populates the instructions queue
+	 * Verify that addInstructions populates the instructions queue and that the state is listening
 	 */
 	@Test
 	void testAddInstructions() {
@@ -34,10 +35,11 @@ public class SchedulerTest {
 		assertFalse(scheduler.hasInstructions());
 		scheduler.addInstructions(instruction1);
 		assertTrue(scheduler.hasInstructions());
+		assertTrue(scheduler.getState() == SchedulerStates.LISTENING);
 	}
 	
 	/**
-	 * Verify that popInstructions removes instruction from instructions queue, and verifies instruction details
+	 * Verify that popInstructions removes instruction from instructions queue, and verifies instruction details and that the state is delegating
 	 */
 	@Test
 	void testPopInstructions() {
@@ -45,10 +47,11 @@ public class SchedulerTest {
 		scheduler.addInstructions(instruction1);
 		scheduler.popInstructions();		
 		assertFalse(scheduler.hasInstructions());
+		assertTrue(scheduler.getState() == SchedulerStates.DELEGATING);
 	}
 	
 	/**
-	 * Verify that completeInstructions populates the completed list
+	 * Verify that completeInstructions populates the completed list and test that the state is changefloor
 	 */
 	@Test
 	void testCompleteInstructions() {
@@ -56,10 +59,11 @@ public class SchedulerTest {
 		assertFalse(scheduler.hasCompleted());
 		scheduler.completeInstructions(instruction1);
 		assertTrue(scheduler.hasCompleted());
+		assertTrue(scheduler.getState() == SchedulerStates.CHANGEFLOOR);
 	}
 	
 	/**
-	 * Verify that notifyFloor removes from completed list and properly counts numCompleted
+	 * Verify that notifyFloor removes from completed list and properly counts numCompleted and that the state is processarrival
 	 */
 	@Test
 	void testNotifyFloor() {
@@ -68,6 +72,14 @@ public class SchedulerTest {
 		scheduler.notifyFloor(4);
 		assertFalse(scheduler.hasCompleted());
 		assertTrue(scheduler.getNumCompleted() == 1);
+		assertTrue(scheduler.getState() == SchedulerStates.PROCESSARRIVAL);
 	}
 	
+	/**
+	 * Verify that the initial state is listening
+	 */
+	@Test
+	void testInitialState() {
+		assertTrue(scheduler.getState() == SchedulerStates.LISTENING);
+	}
 }
