@@ -44,23 +44,12 @@ public class PacketHandler {
 	
 	/**
 	 * Helper function for sending DatagramPacket over a DatagramSocket to a specified port
-	 * @param message original byte array
 	 * @param sendSocket the socket to be used
 	 * @param sendPacket the packet to be sent
-	 * @param port the port to be used
 	 * @param from the name of the sender
 	 * @param to the name of the desired recipient
 	 */
-	protected void send(byte[] message, DatagramSocket sendSocket, DatagramPacket sendPacket, String from, String to) {
-		// Attempt to send packet to the passed in port
-		try {
-		   sendPacket = new DatagramPacket(message, message.length,
-		                                  InetAddress.getLocalHost(), receiverPort);
-		} catch (UnknownHostException e) {
-		   e.printStackTrace();
-		   System.exit(1);
-		}
-		
+	protected void send(DatagramSocket sendSocket, DatagramPacket sendPacket, String from, String to) {
 		// Send the datagram packet to the server via the send/receive socket. 
 		try {
 		   sendSocket.send(sendPacket);
@@ -70,6 +59,24 @@ public class PacketHandler {
 		}
 	}
 	
+	/**
+	 * Helper function to create a packet with the given byte array message
+	 * @param message the message to create a packet with
+	 * @return sendPacket the created packet
+	 */
+	protected DatagramPacket createPacket(byte[] message) {
+		DatagramPacket sendPacket = null;
+		// Attempt to send packet to the passed in port
+		try {
+		   sendPacket = new DatagramPacket(message, message.length,
+		                                  InetAddress.getLocalHost(), receiverPort);
+		} catch (UnknownHostException e) {
+		   e.printStackTrace();
+		   System.exit(1);
+		}
+		
+		return sendPacket;
+	}
 	/**
 	 * Helper function for receiving DatagramPacket over a DatagramSocket
 	 * @param receiveSocket the socket to be used
