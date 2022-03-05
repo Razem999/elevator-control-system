@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
  * Class that contains generic methods for dealing with UDP communication
  */
 public class PacketHandler {
+	static final int MAX_BUFFER_SIZE = 100;
 	
 	private int receiverPort; // the port of the entity that we will communicate with
 	
@@ -23,7 +24,6 @@ public class PacketHandler {
 		this.receiverPort = receiverPort;
 	}
 	
-	// setter for use with client so we can dynamically set it
 	public void setReceiverPort(int receiverPort) {
 		this.receiverPort = receiverPort;
 	}
@@ -34,7 +34,7 @@ public class PacketHandler {
 	 * @param true length of message
 	 * @return message with ending zeroes removed
 	 */
-	public static byte[] removeUnecessary(byte[] message, int length) {
+	public static byte[] trimBuffer(byte[] message, int length) {
 		// create new array that is only the size we need, so we don't send unnecessary data via UDP
 	    byte[] receivedRightSize = new byte[length];
 	    System.arraycopy(message, 0, receivedRightSize, 0, length);
@@ -77,6 +77,7 @@ public class PacketHandler {
 		
 		return sendPacket;
 	}
+	
 	/**
 	 * Helper function for receiving DatagramPacket over a DatagramSocket
 	 * @param receiveSocket the socket to be used
@@ -87,8 +88,8 @@ public class PacketHandler {
 	 */
 	protected byte[] receive(DatagramSocket receiveSocket, DatagramPacket receivePacket, String from, String to) {
 		// Construct a DatagramPacket for receiving packets up 
-		byte receivedData[] = new byte[100]; // while we know the exact size for this assignment, this won't always be the case
-		receivePacket = new DatagramPacket(receivedData, receivedData.length);
+		byte receivedData[] = new byte[MAX_BUFFER_SIZE];
+		receivePacket = new DatagramPacket(receivedData, receivePacket.getLength());
 
 		try {
 		   // Block until a datagram is received via sendReceiveSocket.  
@@ -105,12 +106,8 @@ public class PacketHandler {
 		   System.exit(1);
 		}
 		
-		
-		int len = receivePacket.getLength();
-		
-		receivedData = removeUnecessary(receivedData, len);
+		receivedData = trimBuffer(receivedData, receivePacket.getLength());
 		
 		return receivedData;
 	}
-
 }
