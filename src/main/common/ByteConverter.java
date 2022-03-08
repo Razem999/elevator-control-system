@@ -3,14 +3,10 @@ package main.common;
 import java.util.Arrays;
 
 public class ByteConverter {
-	protected static byte[] instructionToByteArray(Instructions instruction) {		
-		String ins = instruction.toString();
-		
-		// get rid of everything except the direction, starting floor and destination floor, then split into arrays
-		String[] instructions = ins.substring(ins.indexOf(",")+1).replaceFirst("]", "").split(","); 
-		byte[] directionBytes = instructions[0].getBytes();
-		byte[] startBytes = instructions[1].getBytes();
-		byte[] endBytes = instructions[2].getBytes();
+	public static byte[] instructionToByteArray(Instructions instruction) {		
+		byte[] directionBytes = instruction.getDirection().getBytes();
+		byte[] startBytes = String.valueOf(instruction.getCurrentFloor()).getBytes();
+		byte[] endBytes = String.valueOf(instruction.getDestinationFloor()).getBytes();
 		
 		// create new array of right size to copy into, note the + 2 is to add 0 bytes between instructions
 		byte[] insByte = new byte[directionBytes.length + startBytes.length + endBytes.length + 2]; 
@@ -19,11 +15,11 @@ public class ByteConverter {
 		System.arraycopy(startBytes, 0, insByte, directionBytes.length + 1, startBytes.length);
 		insByte[directionBytes.length + 1 + startBytes.length] = 0;
 		System.arraycopy(endBytes, 0, insByte, directionBytes.length + 1 + startBytes.length + 1, endBytes.length);
-
+		
 		return insByte;
 	}
 	
-	protected static Instructions byteArrayToInstructions(byte[] insArray) {
+	public static Instructions byteArrayToInstructions(byte[] insArray) {
 		int zeroPos1 = 0; 
 		int zeroPos2 = 0;
 		int count = 0;
@@ -48,5 +44,18 @@ public class ByteConverter {
 		
 		// Elevator doesn't care about the time it receives a request, so we just default it to 0
 		return new Instructions("00:00:00.0", start, direction, dest);
+	}
+	
+	public static void main(String[] args) {
+		Instructions instruction = new Instructions("14:05:15.0", "3", "Up", "4");
+
+		byte[] test = instructionToByteArray(instruction);
+		System.out.println("As a string " + new String(test, 0, test.length));
+	    System.out.println("As a byte array: " + Arrays.toString(test) + "\n");
+		instruction = byteArrayToInstructions(test);
+
+
+
+
 	}
 }
