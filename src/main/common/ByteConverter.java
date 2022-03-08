@@ -46,19 +46,7 @@ public class ByteConverter {
 		String start = new String(Arrays.copyOfRange(insArray, zeroPos1 + 1, zeroPos2));
 		String dest = new String(Arrays.copyOfRange(insArray, zeroPos2 + 1, insArray.length));
 		
+		// Elevator doesn't care about the time it receives a request, so we just default it to 0
 		return new Instructions("00:00:00.0", start, direction, dest);
 	}
-	
-	public static void main(String[] args) {
-		Instructions instruction = new Instructions("14:05:15.0", "3", "Up", "4");
-		System.out.println(instruction.toString());
-		byte[] test = instructionToByteArray(instruction);
-		
-		instruction = byteArrayToInstructions(test);
-		
-		System.out.println(instruction.toString());
-		
-		
-	}
-	
 }
