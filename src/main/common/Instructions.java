@@ -5,6 +5,7 @@ package main.common;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Date;
 
 /**
@@ -19,7 +20,7 @@ public class Instructions {
 	/**
 	 * Time format for when the instructions get issued
 	 */
-	private Date time;
+	private LocalTime time;
 	/**
 	 * Direction of where the passenger would like to go
 	 */
@@ -40,14 +41,8 @@ public class Instructions {
 	 * @param direction
 	 * @param destinationFloor
 	 */
-	public Instructions(String time, String currentFloor, String direction , String destinationFloor) {
-		
-		try {
-			this.time = new SimpleDateFormat(dateFormat).parse(time);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		
+	public Instructions(String time, String currentFloor, String direction , String destinationFloor) {	
+		this.time = LocalTime.parse(time);
 		this.currentFloor = Integer.parseInt(currentFloor);
 		this.direction = Direction.valueOf(direction.toUpperCase());
 		this.destinationFloor = Integer.parseInt(destinationFloor);
@@ -61,7 +56,7 @@ public class Instructions {
 	 * Getting time of instruction creation
 	 * @return time
 	 */
-	public Date getTime() {
+	public LocalTime getTime() {
 		return time;
 	}
 	
@@ -96,6 +91,4 @@ public class Instructions {
 	public String toString() {
 		return String.format("INS:[%s,%s,%d,%d]", time.toString(), direction,  currentFloor, destinationFloor);
 	}
-	
-	
 }

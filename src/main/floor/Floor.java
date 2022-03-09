@@ -5,43 +5,100 @@ package main.floor;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import static java.time.temporal.ChronoUnit.MILLIS;
 
 import main.common.Instructions;
 import main.common.Logger;
-import main.scheduler.Scheduler;
+import main.common.PacketHandler;
+import main.common.ByteConverter;
+
 
 /**
  * Class to represent a floor subsystem
  */
-public class Floor implements Runnable {
+public class Floor {
 	/** logger instance to handle console logging */
 	private Logger logger;
 	/** Button for users to interact with */
 	private FloorButton button;
-	/** Associated floor number */
-	private int floorNumber;
-	/** The Scheduler which handles this Floor's inputs */
-	private Scheduler scheduler;
+	/** Array to track all floors that exist */
+	private int[] floors;
+	/** Array of all floorButtons */
+	private FloorButton[] floorButtons;
+	/** Array of all floorLamps */
+	private FloorLamp[] floorLamps;
 	/** Instructions sent from this Floor to the Scheduler */
 	private ArrayList<Instructions> instructions;
 	/** Tracks time spent without processing instructions */
 	private int timeWithoutRequests = 0;
+	/** PacketHandler for dealing with UDP communication */
+	private PacketHandler packetHandler;
+	/** DatagramPacket for handling packets */
+	private DatagramPacket sendPacket, receivePacket;
+	/** the socket we will use for communication */
+	private DatagramSocket sendReceiveSocket;
 	
 	/**
 	 * Constructor that accepts a scheduler and floor number
 	 * @param scheduler
 	 * @param floorNumber
 	 */
-	public Floor(Scheduler scheduler, int floorNumber) {
+	public Floor(int numFloors) {
 		this.button = new FloorButton();
-		this.floorNumber = floorNumber;
-		this.scheduler = scheduler;
 		this.instructions = new ArrayList<>();
-		this.logger = new Logger("FLOOR " + floorNumber);
+		this.packetHandler = new PacketHandler(23); // TODO: decide on port for schedulers then change this
+		
+		try {
+		    // Construct a datagram socket and bind it to any available 
+			// port on the local host machine. This socket will be used to
+			// send and receive UDP Datagram packets.
+			sendReceiveSocket = new DatagramSocket();
+			sendReceiveSocket.setSoTimeout(10000); // socket closes after 10 seconds with nothing received
+		} catch (SocketException se) {   // Can't create the socket.
+		    se.printStackTrace();
+		    System.exit(1);
+		}
+		 
+		// Fill in the array with floors from 1 to numFloors
+		this.floors = new int[numFloors];
+		for (int i = 1; i <= numFloors; i++) {
+			floors[i-1] = i;
+		}
+		
+		this.floorButtons = new FloorButton[numFloors];
+		this.floorLamps = new FloorLamp[numFloors];
+		
+		this.logger = new Logger("FLOOR");
 		logger.log("Starting...");
-		getInput("mockInput.txt");
+	}
+	
+	/**
+	 * Get getInput() for unit testing
+	 * @param filename
+	 */
+	public void getGetInput(String file) {
+		getInput(file);
+	}
+	
+	/**
+	 * Get verifyInput() for unit testing
+	 * @param commands
+	 */
+	public boolean getVerifyInput(String[] commands) {
+		return verifyInput(commands);
+	}
+	
+	/**
+	 * Returns the instructions associated with this floor
+	 * @return arrayList - array of instructions 
+	 */
+	public ArrayList<Instructions> getInstructions() {
+		return instructions;
 	}
 	
 	/**
@@ -79,78 +136,67 @@ public class Floor implements Runnable {
 		if (commands[1].equals(commands[3])) {
 			return false;
 		}
-		              
-		// if the current floor of the command doesn't match this floor
-		if (Integer.valueOf(commands[1]) != this.floorNumber) {
+		
+		// make sure floors in the instruction are within legal bounds
+		if (Integer.valueOf(commands[1]) < 1 || Integer.valueOf(commands[1]) > floors[floors.length-1]) {
+			return false;
+		}
+		
+		
+		if (Integer.valueOf(commands[3]) < 1 || Integer.valueOf(commands[3]) > floors[floors.length-1]) {
 			return false;
 		}
 		               
-		// if the two previous checks passed, we just need to verify that the direction is correct
+		// if the previous checks passed, we just need to verify that the direction is correct
 		if (Integer.valueOf(commands[1]) < Integer.valueOf(commands[3])) {
 			return commands[2].equals("Up");
 		}
 
 		return commands[2].equals("Down");
 	}
-
-	/**
-	 * Get getInput() for unit testing
-	 * @param filename
-	 */
-	public void getGetInput(String file) {
-		getInput(file);
-	}
 	
+    /**
+     * Sends an instruction to the scheduler to be handled by an elevator
+     * @returns boolean representing whether the instruction was received by the scheduler or not
+     */
+    private boolean sendInstruction(Instructions instruction) {
+    	byte[] insArr = ByteConverter.instructionToByteArray(instruction);
+    	
+    	sendPacket = packetHandler.createPacket(insArr);
+    	
+    	packetHandler.send(sendReceiveSocket, sendPacket);
+    	
+    	return packetHandler.receive(sendReceiveSocket, receivePacket)[0] == (byte) 0; 
+    }
+    
 	/**
-	 * Get verifyInput() for unit testing
-	 * @param commands
+	 * Method for the floor simulator to read in and send instructions
 	 */
-	public boolean getVerifyInput(String[] commands) {
-		return verifyInput(commands);
-	}
-	
-	/**
-	 * Main loop to add all instructions to the scheduler and then wait on requests to complete
-	 */
-	public void run() {
-		while (scheduler.getNumCompleted() < 3) {
-			synchronized(scheduler) {
-				while (!instructions.isEmpty()) {
-					logger.log("Sending instructions to scheduler...");
-					scheduler.addInstructions(instructions.remove(0));
-					timeWithoutRequests = 0;
-				}
-				if (scheduler.notifyFloor(floorNumber)) {
-					logger.log("Received message from scheduler\n");
-				}
+	public void simulate() {
+		// read instructions from file into instructions array
+		getInput("mockInput.txt");
+		
+		if(sendInstruction(instructions.get(0))) {
+			logger.log("Successfully sent instruction: " + instructions.get(0).toString());
+		}
+		
+		for (int i = 1; i < instructions.size(); i++) {
+			try {
+				// Sleep for the difference in time between each request
+			    Thread.sleep(Math.abs(MILLIS.between(instructions.get(i).getTime(), instructions.get(i - 1).getTime())));
+			} 
+			catch(InterruptedException ex) {
+			    Thread.currentThread().interrupt();
+			}
+			
+			if(sendInstruction(instructions.get(i))) {
+				logger.log("Successfully sent instruction: " + instructions.get(i).toString());
 			}
 		}
-		logger.log("*** All requests finished. Exiting... ***");
-		System.exit(0);
 	}
 	
-	
-	/**
-	 * Returns the floor number associated with this floor
-	 * @return int - associated floor number
-	 */
-	public int getFloorNumber() {
-		return floorNumber;
-	}
-	
-	/**
-	 * Sets the associated floor number of this floor
-	 * @param floor int - the new floor number
-	 */
-	public void setFloorNumber(int floor) {
-		floorNumber = floor;
-	}
-	
-	/**
-	 * Returns the instructions associated with this floor
-	 * @return arrayList - array of instructions 
-	 */
-	public ArrayList<Instructions> getInstructions() {
-		return instructions;
+	public static void main(String[] args) {
+		Floor floor = new Floor(6);
+		floor.simulate();
 	}
 }

@@ -45,17 +45,4 @@ public class ByteConverter {
 		// Elevator doesn't care about the time it receives a request, so we just default it to 0
 		return new Instructions("00:00:00.0", start, direction, dest);
 	}
-	
-	public static void main(String[] args) {
-		Instructions instruction = new Instructions("14:05:15.0", "3", "Up", "4");
-
-		byte[] test = instructionToByteArray(instruction);
-		System.out.println("As a string " + new String(test, 0, test.length));
-	    System.out.println("As a byte array: " + Arrays.toString(test) + "\n");
-		instruction = byteArrayToInstructions(test);
-
-
-
-
-	}
 }

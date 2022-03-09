@@ -34,7 +34,7 @@ public class PacketHandler {
 	 * @param true length of message
 	 * @return message with ending zeroes removed
 	 */
-	public static byte[] trimBuffer(byte[] message, int length) {
+	public byte[] trimBuffer(byte[] message, int length) {
 		// create new array that is only the size we need, so we don't send unnecessary data via UDP
 	    byte[] receivedRightSize = new byte[length];
 	    System.arraycopy(message, 0, receivedRightSize, 0, length);
@@ -49,7 +49,7 @@ public class PacketHandler {
 	 * @param from the name of the sender
 	 * @param to the name of the desired recipient
 	 */
-	protected void send(DatagramSocket sendSocket, DatagramPacket sendPacket, String from, String to) {
+	public void send(DatagramSocket sendSocket, DatagramPacket sendPacket) {
 		// Send the datagram packet to the server via the send/receive socket. 
 		try {
 		   sendSocket.send(sendPacket);
@@ -64,7 +64,7 @@ public class PacketHandler {
 	 * @param message the message to create a packet with
 	 * @return sendPacket the created packet
 	 */
-	protected DatagramPacket createPacket(byte[] message) {
+	public DatagramPacket createPacket(byte[] message) {
 		DatagramPacket sendPacket = null;
 		// Attempt to send packet to the passed in port
 		try {
@@ -86,7 +86,7 @@ public class PacketHandler {
 	 * @param to the name of the desired recipient
 	 * @return returns the received byte array
 	 */
-	protected byte[] receive(DatagramSocket receiveSocket, DatagramPacket receivePacket, String from, String to) {
+	public byte[] receive(DatagramSocket receiveSocket, DatagramPacket receivePacket) {
 		// Construct a DatagramPacket for receiving packets up 
 		byte receivedData[] = new byte[MAX_BUFFER_SIZE];
 		receivePacket = new DatagramPacket(receivedData, receivePacket.getLength());
