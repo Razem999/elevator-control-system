@@ -26,7 +26,7 @@ import main.scheduler.*;
 public class FloorTest {
 
 	Scheduler scheduler;
-	Floor floor;
+	FloorManager floor;
 	ArrayList<Instructions> instructions = new ArrayList<>();
 	ArrayList<String[]> commandsList = new ArrayList<>();
 	
@@ -36,7 +36,7 @@ public class FloorTest {
 	@BeforeEach
 	void setup() {
 		scheduler = new Scheduler();
-		floor = new Floor(6);
+		floor = new FloorManager(6);
 		
 		// get instructions array
 		floor.getGetInput("src/test/mockInstructions.txt");

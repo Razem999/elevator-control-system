@@ -12,7 +12,7 @@ import java.net.UnknownHostException;
  * Class that contains generic methods for dealing with UDP communication
  */
 public class PacketHandler {
-	static final int MAX_BUFFER_SIZE = 100;
+	private static final int MAX_BUFFER_SIZE = 100;
 	
 	private int receiverPort; // the port of the entity that we will communicate with
 	
@@ -34,7 +34,7 @@ public class PacketHandler {
 	 * @param true length of message
 	 * @return message with ending zeroes removed
 	 */
-	public byte[] trimBuffer(byte[] message, int length) {
+	private byte[] trimBuffer(byte[] message, int length) {
 		// create new array that is only the size we need, so we don't send unnecessary data via UDP
 	    byte[] receivedRightSize = new byte[length];
 	    System.arraycopy(message, 0, receivedRightSize, 0, length);

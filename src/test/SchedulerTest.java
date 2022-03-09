@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import main.common.Instructions;
-import main.floor.Floor;
+import main.floor.FloorManager;
 import main.scheduler.Scheduler;
 import main.scheduler.Scheduler.SchedulerStates;
 
@@ -17,7 +17,7 @@ import main.scheduler.Scheduler.SchedulerStates;
  */
 public class SchedulerTest {
 	Scheduler scheduler;
-	Floor floor;
+	FloorManager floor;
 	/**
 	 * Set up a scheduler
 	 */

@@ -4,7 +4,7 @@
 package main;
 
 import main.elevator.Elevator;
-import main.floor.Floor;
+import main.floor.FloorManager;
 import main.scheduler.Scheduler;
 
 /**

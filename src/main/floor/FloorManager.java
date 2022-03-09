@@ -21,7 +21,10 @@ import main.common.ByteConverter;
 /**
  * Class to represent a floor subsystem
  */
-public class Floor {
+public class FloorManager {
+	private static final int TIMEOUT = 10000;
+	private static final int SCHEDULER_PORT = 23;
+	
 	/** logger instance to handle console logging */
 	private Logger logger;
 	/** Button for users to interact with */
@@ -48,17 +51,17 @@ public class Floor {
 	 * @param scheduler
 	 * @param floorNumber
 	 */
-	public Floor(int numFloors) {
+	public FloorManager(int numFloors) {
 		this.button = new FloorButton();
 		this.instructions = new ArrayList<>();
-		this.packetHandler = new PacketHandler(23); // TODO: decide on port for schedulers then change this
+		this.packetHandler = new PacketHandler(SCHEDULER_PORT); // TODO: decide on port for schedulers then change this
 		
 		try {
 		    // Construct a datagram socket and bind it to any available 
 			// port on the local host machine. This socket will be used to
 			// send and receive UDP Datagram packets.
 			sendReceiveSocket = new DatagramSocket();
-			sendReceiveSocket.setSoTimeout(10000); // socket closes after 10 seconds with nothing received
+			sendReceiveSocket.setSoTimeout(TIMEOUT); // socket closes after 10 seconds with nothing received
 		} catch (SocketException se) {   // Can't create the socket.
 		    se.printStackTrace();
 		    System.exit(1);
@@ -138,12 +141,12 @@ public class Floor {
 		}
 		
 		// make sure floors in the instruction are within legal bounds
-		if (Integer.valueOf(commands[1]) < 1 || Integer.valueOf(commands[1]) > floors[floors.length-1]) {
+		if (Integer.valueOf(commands[1]) < 1 || Integer.valueOf(commands[1]) > floors.length) {
 			return false;
 		}
 		
 		
-		if (Integer.valueOf(commands[3]) < 1 || Integer.valueOf(commands[3]) > floors[floors.length-1]) {
+		if (Integer.valueOf(commands[3]) < 1 || Integer.valueOf(commands[3]) > floors.length) {
 			return false;
 		}
 		               
@@ -196,7 +199,7 @@ public class Floor {
 	}
 	
 	public static void main(String[] args) {
-		Floor floor = new Floor(6);
+		FloorManager floor = new FloorManager(6);
 		floor.simulate();
 	}
 }
