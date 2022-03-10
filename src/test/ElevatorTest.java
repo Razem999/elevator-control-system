@@ -25,7 +25,7 @@ public class ElevatorTest {
 	 */
 	@BeforeEach
 	void setup() {
-		Scheduler scheduler = new Scheduler();
+		Scheduler scheduler = new Scheduler(true, 23);
 		elevator = new Elevator(scheduler, 4);
 	}
 	

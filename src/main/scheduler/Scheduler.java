@@ -1,11 +1,14 @@
 package main.scheduler;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import main.common.ByteConverter;
 import main.common.Direction;
 import main.common.Instructions;
 import main.common.Logger;
+import main.common.PacketHandler;
 import main.elevator.ElevatorButton;
 import main.floor.FloorButton;
 
@@ -13,7 +16,8 @@ import main.floor.FloorButton;
  * Class to represent the backend server to handle communication between
  * elevator components
  */
-public class Scheduler {
+public class Scheduler implements Runnable{
+	private static final int FLOOR_MANAGER_PORT = 50;
 	/** logger instance to handle console logging */
 	private Logger logger;
 	/**
@@ -57,15 +61,24 @@ public class Scheduler {
 		}
 	};
 	
+
+	/** PacketHandler for dealing with UDP communication */
+	private PacketHandler packetHandler;
+	
 	/**
 	 * Default constructor
 	 */
-	public Scheduler() {
+	public Scheduler(boolean floorFacing, int portNum) {
 		queue = new ArrayList<>();
 		completed = new ArrayList<>();
 		numCompleted = 0;
 		this.logger = new Logger("SCHED");
 		logger.log("Starting...");
+		if (floorFacing) {
+			packetHandler = new PacketHandler(FLOOR_MANAGER_PORT, portNum);
+		} else {
+			packetHandler = new PacketHandler(0, portNum);
+		}
 	}
 	
 	/**
@@ -208,5 +221,32 @@ public class Scheduler {
 	 */
 	public String toString() {
 		return "Q:" + queue + "\nC:" + completed;
+	}
+	
+	public void run() {
+		byte[] response;
+		Instructions instruction;
+		String stringResponse;
+		while (true) {
+			logger.log("Waiting..");
+			response = packetHandler.receive();
+			stringResponse = new String(response, StandardCharsets.UTF_8).substring(0,2);
+			if (stringResponse.equals("UP") || stringResponse.equals("DO")) {
+
+				logger.log("Received Instruction");
+				instruction = ByteConverter.byteArrayToInstructions(response);
+				packetHandler.send(new byte[]{0});
+				//Optimize here
+				logger.log("Sent Instruction");
+				
+			}
+		}
+	}
+	
+	public static void main(String[] args) {
+		Thread sched1 = new Thread(new Scheduler(true, 24), "Floor Facing");
+//		Thread sched2 = new Thread(new Scheduler(false, 23), "Elevator Facing");
+		sched1.start();
+//		sched2.start();
 	}
 }

@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
 import static java.time.temporal.ChronoUnit.MILLIS;
@@ -22,7 +23,8 @@ import main.common.ByteConverter;
  * Class to represent a floor subsystem
  */
 public class FloorManager {
-	private static final int SCHEDULER_PORT = 23;
+	private static final int SCHEDULER_PORT = 24;
+	private static final int FLOOR_MANAGER_PORT = 50;
 	
 	/** logger instance to handle console logging */
 	private Logger logger;
@@ -49,7 +51,7 @@ public class FloorManager {
 	public FloorManager(int numFloors) {
 		this.button = new FloorButton();
 		this.instructions = new ArrayList<>();
-		this.packetHandler = new PacketHandler(SCHEDULER_PORT); // TODO: decide on port for schedulers then change this
+		this.packetHandler = new PacketHandler(SCHEDULER_PORT, FLOOR_MANAGER_PORT); // TODO: decide on port for schedulers then change this
 		 
 		// Fill in the array with floors from 1 to numFloors
 		this.floors = new int[numFloors];
@@ -150,8 +152,9 @@ public class FloorManager {
     	byte[] insArr = ByteConverter.instructionToByteArray(instruction);
     	
     	packetHandler.send(insArr);
-    	
-    	return packetHandler.receive()[0] == (byte) 0; 
+    	byte[] returned = packetHandler.receive();
+    	logger.log("Response: " + new String(returned, StandardCharsets.UTF_8));
+    	return returned[0] == (byte) 0; 
     }
     
 	/**

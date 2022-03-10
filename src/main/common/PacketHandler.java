@@ -21,20 +21,16 @@ public class PacketHandler {
 	
 	private DatagramSocket sendReceiveSocket;
 	
-	private int receiverPort; // the port of the entity that we will communicate with
+	private int sendPort; // the port of the entity that we will communicate with
 	
-	public PacketHandler() {
-		receiverPort = -1;
-	}
-	
-	public PacketHandler(int receiverPort) {
-		this.receiverPort = receiverPort;
+	public PacketHandler(int sendPort, int receivePort) {
+		this.sendPort = sendPort;
 		
 		try {
 		    // Construct a datagram socket and bind it to any available 
 			// port on the local host machine. This socket will be used to
 			// send and receive UDP Datagram packets.
-			sendReceiveSocket = new DatagramSocket();
+			sendReceiveSocket = new DatagramSocket(receivePort);
 			sendReceiveSocket.setSoTimeout(TIMEOUT); // socket closes after 10 seconds with nothing received
 		} catch (SocketException se) {   // Can't create the socket.
 		    se.printStackTrace();
@@ -42,8 +38,8 @@ public class PacketHandler {
 		}
 	}
 	
-	public void setReceiverPort(int receiverPort) {
-		this.receiverPort = receiverPort;
+	public void setReceiverPort(int sendPort) {
+		this.sendPort = sendPort;
 	}
 	
 	/**
@@ -88,7 +84,7 @@ public class PacketHandler {
 		// Attempt to send packet to the passed in port
 		try {
 		   sendPacket = new DatagramPacket(message, message.length,
-		                                  InetAddress.getLocalHost(), receiverPort);
+		                                  InetAddress.getLocalHost(), sendPort);
 		} catch (UnknownHostException e) {
 		   e.printStackTrace();
 		   System.exit(1);
@@ -106,13 +102,13 @@ public class PacketHandler {
 	public byte[] receive() {
 		// Construct a DatagramPacket for receiving packets up 
 		byte receivedData[] = new byte[MAX_BUFFER_SIZE];
-		receivePacket = new DatagramPacket(receivedData, receivePacket.getLength());
+		receivePacket = new DatagramPacket(receivedData, receivedData.length);
 
 		try {
 		   // Block until a datagram is received via sendReceiveSocket.  
 		   sendReceiveSocket.receive(receivePacket);   
 		   // sets the port based on who sent us a message
-		   receiverPort = receivePacket.getPort();
+		   sendPort = receivePacket.getPort();
 		} 
 		catch(SocketTimeoutException e) {
 			System.out.println("Did not receive response for 10 seconds...Exiting");

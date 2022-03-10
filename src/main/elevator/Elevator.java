@@ -3,7 +3,7 @@
  */
 package main.elevator;
 
-import main.Main;
+import main.common.Constants;
 import main.common.Instructions;
 import main.common.Logger;
 import main.scheduler.Scheduler;
@@ -108,7 +108,7 @@ public class Elevator implements Runnable {
 	public Elevator(Scheduler scheduler, int elevatorNumber) {
 		this.scheduler = scheduler;
 		this.elevatorNumber = elevatorNumber;
-		this.buttons = new ElevatorButton(Main.NUM_FLOORS);
+		this.buttons = new ElevatorButton(Constants.NUM_FLOORS);
 		this.door = new ElevatorDoor();
 		this.lamp = new ElevatorLamp();
 		this.motor = new ElevatorMotor(TIME_BETWEEN_FLOORS);

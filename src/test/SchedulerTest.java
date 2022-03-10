@@ -23,7 +23,7 @@ public class SchedulerTest {
 	 */
 	@BeforeEach
 	void setup() {
-		scheduler = new Scheduler();
+		scheduler = new Scheduler(true,23);
 	}
 	
 	/**

@@ -35,7 +35,7 @@ public class FloorTest {
 	 */
 	@BeforeEach
 	void setup() {
-		scheduler = new Scheduler();
+		scheduler = new Scheduler(true, 23);
 		floor = new FloorManager(6);
 		
 		// get instructions array
