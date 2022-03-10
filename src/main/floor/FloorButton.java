@@ -13,10 +13,10 @@ public class FloorButton {
 	private Direction arrows;
 	
 	/**
-	 * Constructor that defaults direction to UP
+	 * Constructor that defaults direction to 'OFF'
 	 */
 	public FloorButton() {
-		this.arrows = Direction.UP;
+		arrows = Direction.OFF;
 	}
 	
 	/**
@@ -43,5 +43,12 @@ public class FloorButton {
 	 */
 	public void pressDownButton() {
 		arrows = Direction.DOWN;
+	}
+	
+	/**
+	 * Simulates elevator arriving and turning the button off
+	 */
+	public void elevatorArrives() {
+		arrows = Direction.OFF;
 	}
 }

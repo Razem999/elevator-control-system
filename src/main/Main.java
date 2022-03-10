@@ -4,7 +4,7 @@
 package main;
 
 import main.elevator.Elevator;
-import main.floor.Floor;
+import main.floor.FloorManager;
 import main.scheduler.Scheduler;
 
 /**
@@ -22,10 +22,10 @@ public class Main {
 		// TODO make and start 3 threads
 		Scheduler scheduler = new Scheduler();
 		Thread elevator = new Thread(new Elevator(scheduler, 0), "Elevator 0");
-		Thread floor = new Thread(new Floor(scheduler, 4), "Floor 4");
+//		Thread floor = new Thread(new Floor(6), "Floor");
 
 		elevator.start();
-		floor.start();
+//		floor.start();
 	}
 
 }
