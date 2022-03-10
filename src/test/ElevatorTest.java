@@ -26,7 +26,7 @@ public class ElevatorTest {
 	@BeforeEach
 	void setup() {
 		Scheduler scheduler = new Scheduler(true, 23);
-		elevator = new Elevator(scheduler, 4);
+		elevator = new Elevator(123);
 	}
 	
 	/**
@@ -46,7 +46,7 @@ public class ElevatorTest {
 	}
 	
 	/**
-	 * Test that the ability to set the state to moving
+	 * Test that the state can be set to moving
 	 */
 	@Test
 	void testMovingState() {
@@ -55,12 +55,12 @@ public class ElevatorTest {
 	}
 	
 	/**
-	 * Test that the ability to set the state to arriving
+	 * Test that the state can be set to idle
 	 */
 	@Test
-	void testArrivingState() {
+	void testRecurringIdleState() {
 		elevator.setState(elevator.getState().nextState());
 		elevator.setState(elevator.getState().nextState());
-		assertTrue(elevator.getState() == ElevatorState.Arriving);
+		assertTrue(elevator.getState() == ElevatorState.Idle);
 	}
 }

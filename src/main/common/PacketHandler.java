@@ -1,12 +1,7 @@
 package main.common;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
+import java.net.*;
 
 
 /**
@@ -27,17 +22,27 @@ public class PacketHandler {
 		this.sendPort = sendPort;
 		
 		try {
-		    // Construct a datagram socket and bind it to any available 
+			// Construct a datagram socket and bind it to any available 
 			// port on the local host machine. This socket will be used to
 			// send and receive UDP Datagram packets.
 			sendReceiveSocket = new DatagramSocket(receivePort);
 			sendReceiveSocket.setSoTimeout(TIMEOUT); // socket closes after 10 seconds with nothing received
 		} catch (SocketException se) {   // Can't create the socket.
-		    se.printStackTrace();
-		    System.exit(1);
+			se.printStackTrace();
+			System.exit(1);
 		}
 	}
 	
+	public PacketHandler(int sendPort, int receivePort, int timeout) {
+		this(sendPort, receivePort);
+		try {
+			sendReceiveSocket.setSoTimeout(timeout);
+		} catch (SocketException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+
 	public void setReceiverPort(int sendPort) {
 		this.sendPort = sendPort;
 	}
@@ -45,7 +50,7 @@ public class PacketHandler {
 	/**
 	 * Create new array that is only the size we need, so we don't send unnecessary data via UDP
 	 * @param message original byte array
-	 * @param true length of message
+	 * @param length true length of message
 	 * @return message with ending zeroes removed
 	 */
 	private byte[] trimBuffer(byte[] message, int length) {
@@ -58,20 +63,17 @@ public class PacketHandler {
 	
 	/**
 	 * Helper function for sending DatagramPacket over a DatagramSocket to a specified port
-	 * @param sendSocket the socket to be used
-	 * @param sendPacket the packet to be sent
-	 * @param from the name of the sender
-	 * @param to the name of the desired recipient
+	 * @param message the message to send
 	 */
 	public void send(byte[] message) {
 		createPacket(message);
 		
 		// Send the datagram packet to the server via the send/receive socket. 
 		try {
-		   sendReceiveSocket.send(sendPacket);
+			sendReceiveSocket.send(sendPacket);
 		} catch (IOException e) {
-		   e.printStackTrace();
-		   System.exit(1);
+			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 	
@@ -83,40 +85,64 @@ public class PacketHandler {
 	private void createPacket(byte[] message) {
 		// Attempt to send packet to the passed in port
 		try {
-		   sendPacket = new DatagramPacket(message, message.length,
+			sendPacket = new DatagramPacket(message, message.length,
 		                                  InetAddress.getLocalHost(), sendPort);
 		} catch (UnknownHostException e) {
-		   e.printStackTrace();
-		   System.exit(1);
+			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 	
 	/**
 	 * Helper function for receiving DatagramPacket over a DatagramSocket
-	 * @param receiveSocket the socket to be used
-	 * @param receivePacket the packet to be sent
-	 * @param from the name of the sender
-	 * @param to the name of the desired recipient
 	 * @return returns the received byte array
 	 */
 	public byte[] receive() {
 		// Construct a DatagramPacket for receiving packets up 
 		byte receivedData[] = new byte[MAX_BUFFER_SIZE];
-		receivePacket = new DatagramPacket(receivedData, receivedData.length);
+		receivePacket = new DatagramPacket(receivedData, MAX_BUFFER_SIZE);
 
 		try {
-		   // Block until a datagram is received via sendReceiveSocket.  
-		   sendReceiveSocket.receive(receivePacket);   
-		   // sets the port based on who sent us a message
-		   sendPort = receivePacket.getPort();
+			// Block until a datagram is received via sendReceiveSocket.  
+			sendReceiveSocket.receive(receivePacket);   
+			// sets the port based on who sent us a message
+			sendPort = receivePacket.getPort();
 		} 
 		catch(SocketTimeoutException e) {
 			System.out.println("Did not receive response for 10 seconds...Exiting");
 			System.exit(-1);
 		} 
 		catch(IOException e) {
-		   e.printStackTrace();
-		   System.exit(1);
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
+		receivedData = trimBuffer(receivedData, receivePacket.getLength());
+		
+		return receivedData;
+	}
+	
+	/**
+	 * Helper function for receiving DatagramPacket over a DatagramSocket without crashing on timeout
+	 * @return returns the received byte array
+	 */
+	public byte[] receiveTimeout() {
+		// Construct a DatagramPacket for receiving packets up 
+		byte receivedData[] = new byte[MAX_BUFFER_SIZE];
+		receivePacket = new DatagramPacket(receivedData, MAX_BUFFER_SIZE);
+
+		try {
+			// Block until a datagram is received via sendReceiveSocket.  
+			sendReceiveSocket.receive(receivePacket);   
+			// sets the port based on who sent us a message
+			sendPort = receivePacket.getPort();
+		} 
+		catch(SocketTimeoutException e) {
+			return null;
+		} 
+		catch(IOException e) {
+			e.printStackTrace();
+			System.exit(1);
 		}
 		
 		receivedData = trimBuffer(receivedData, receivePacket.getLength());
