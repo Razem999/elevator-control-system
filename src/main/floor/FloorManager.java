@@ -22,7 +22,6 @@ import main.common.ByteConverter;
  * Class to represent a floor subsystem
  */
 public class FloorManager {
-	private static final int TIMEOUT = 10000;
 	private static final int SCHEDULER_PORT = 23;
 	
 	/** logger instance to handle console logging */
@@ -41,10 +40,6 @@ public class FloorManager {
 	private int timeWithoutRequests = 0;
 	/** PacketHandler for dealing with UDP communication */
 	private PacketHandler packetHandler;
-	/** DatagramPacket for handling packets */
-	private DatagramPacket sendPacket, receivePacket;
-	/** the socket we will use for communication */
-	private DatagramSocket sendReceiveSocket;
 	
 	/**
 	 * Constructor that accepts a scheduler and floor number
@@ -55,17 +50,6 @@ public class FloorManager {
 		this.button = new FloorButton();
 		this.instructions = new ArrayList<>();
 		this.packetHandler = new PacketHandler(SCHEDULER_PORT); // TODO: decide on port for schedulers then change this
-		
-		try {
-		    // Construct a datagram socket and bind it to any available 
-			// port on the local host machine. This socket will be used to
-			// send and receive UDP Datagram packets.
-			sendReceiveSocket = new DatagramSocket();
-			sendReceiveSocket.setSoTimeout(TIMEOUT); // socket closes after 10 seconds with nothing received
-		} catch (SocketException se) {   // Can't create the socket.
-		    se.printStackTrace();
-		    System.exit(1);
-		}
 		 
 		// Fill in the array with floors from 1 to numFloors
 		this.floors = new int[numFloors];
@@ -165,11 +149,9 @@ public class FloorManager {
     private boolean sendInstruction(Instructions instruction) {
     	byte[] insArr = ByteConverter.instructionToByteArray(instruction);
     	
-    	sendPacket = packetHandler.createPacket(insArr);
+    	packetHandler.send(insArr);
     	
-    	packetHandler.send(sendReceiveSocket, sendPacket);
-    	
-    	return packetHandler.receive(sendReceiveSocket, receivePacket)[0] == (byte) 0; 
+    	return packetHandler.receive()[0] == (byte) 0; 
     }
     
 	/**
