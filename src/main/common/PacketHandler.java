@@ -82,9 +82,9 @@ public class PacketHandler {
 	/**
 	 * Helper function to create a packet with the given byte array message
 	 * @param message the message to create a packet with
-	 * @return sendPacket the created packet
+	 * @return void
 	 */
-	public void createPacket(byte[] message) {
+	private void createPacket(byte[] message) {
 		// Attempt to send packet to the passed in port
 		try {
 		   sendPacket = new DatagramPacket(message, message.length,
