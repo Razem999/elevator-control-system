@@ -17,6 +17,7 @@ import main.common.Instructions;
 import main.common.Logger;
 import main.common.PacketHandler;
 import main.common.ByteConverter;
+import main.common.Constants;
 
 
 /**
@@ -182,9 +183,9 @@ public class FloorManager {
 			}
 		}
 	}
-	
+
 	public static void main(String[] args) {
-		FloorManager floor = new FloorManager(6);
+		FloorManager floor = new FloorManager(Constants.NUM_FLOORS);
 		floor.simulate();
 	}
 }

@@ -71,7 +71,6 @@ public class SchedulerTest {
 		scheduler.completeInstructions(instruction1);
 		scheduler.notifyFloor(4);
 		assertFalse(scheduler.hasCompleted());
-		assertTrue(scheduler.getNumCompleted() == 1);
 		assertTrue(scheduler.getState() == SchedulerStates.PROCESSARRIVAL);
 	}
 	

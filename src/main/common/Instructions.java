@@ -80,10 +80,10 @@ public class Instructions {
 	 * Getting direction of instruction creation
 	 * @return direction
 	 */
-	public String getDirection() {
-		return direction.toString();
+	public Direction getDirection() {
+		return direction;
 	}
-	
+
 	/**
 	 * Returns a string of the instructions prettified
 	 * @return prettified string

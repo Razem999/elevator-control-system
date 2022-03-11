@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import main.common.Instructions;
 import main.elevator.Elevator;
 import main.elevator.Elevator.ElevatorState;
 import main.scheduler.Scheduler;
@@ -19,16 +18,15 @@ import main.scheduler.Scheduler;
 public class ElevatorTest {
 
 	Elevator elevator;
-	
+
 	/**
 	 * Set up an elevator object for tests to use
 	 */
 	@BeforeEach
 	void setup() {
-		Scheduler scheduler = new Scheduler(true, 23);
 		elevator = new Elevator(123);
 	}
-	
+
 	/**
 	 * Test for seeing if getting elevator number is correct
 	 */
@@ -36,7 +34,7 @@ public class ElevatorTest {
 	void elevatorNumberTest() {
 		assertTrue(elevator.getElevatorNumber() == 4);
 	}
-	
+
 	/**
 	 * Test that the initial state of the elevator is arriving
 	 */
@@ -44,7 +42,7 @@ public class ElevatorTest {
 	void testIdleState() {
 		assertTrue(elevator.getState() == ElevatorState.Idle);
 	}
-	
+
 	/**
 	 * Test that the state can be set to moving
 	 */
@@ -53,7 +51,7 @@ public class ElevatorTest {
 		elevator.setState(elevator.getState().nextState());
 		assertTrue(elevator.getState() == ElevatorState.Moving);
 	}
-	
+
 	/**
 	 * Test that the state can be set to idle
 	 */

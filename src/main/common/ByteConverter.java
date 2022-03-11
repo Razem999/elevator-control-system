@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public class ByteConverter {
 	public static byte[] instructionToByteArray(Instructions instruction) {		
-		byte[] directionBytes = instruction.getDirection().getBytes();
+		byte[] directionBytes = instruction.getDirection().toString().getBytes();
 		byte[] startBytes = String.valueOf(instruction.getCurrentFloor()).getBytes();
 		byte[] endBytes = String.valueOf(instruction.getDestinationFloor()).getBytes();
 		
