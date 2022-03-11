@@ -3,8 +3,6 @@ package main.scheduler;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Queue;
-import java.util.LinkedList;
 import java.util.List;
 
 import main.common.ByteConverter;
@@ -78,7 +76,7 @@ public class Scheduler {
 			elevatorRequests.add(requests);
 			this.agents.add(new ElevatorAgent(i, requests, 1));
 		}
-		packetHandler = new PacketHandler(FLOOR_MANAGER_PORT, portNum);
+		packetHandler = new PacketHandler(FLOOR_MANAGER_PORT, portNum, Constants.TIMEOUT);
 		this.logger = new Logger("SCHED");
 		logger.log("Starting...");
 	}
@@ -110,6 +108,7 @@ public class Scheduler {
 		for (ElevatorAgent agent : agents) {
 			int score = getFloorDifference(agent.getCurrentFloor(), startingFloor, agent.getCurrentDirection(), direction, agent.getCurrentState());
 			if (score >= bestScore) {
+				bestScore = score;
 				bestAgent = agent;
 			}
 		}
@@ -117,35 +116,48 @@ public class Scheduler {
 	}
 	
 	/**
-	 * 
-	 * @param currentFloor
-	 * @param startingFloor
-	 * @param currentDirection
-	 * @param destinationDirection
-	 * @return int representing the score of an elevator
+	 * This function assigns an elevator a score for handling a given request, where higher is better
+	 * @param currentFloor the current floor of the elevator
+	 * @param startingFloor the starting floor for the instruction
+	 * @param currentDirection the current direction of the elevator
+	 * @param destinationDirection the direction of the instruction
+	 * @return integer between 1 and 4 representing that elevator's score to handle a request, higher is better
 	 */
 	private int getFloorDifference(int currentFloor, int startingFloor, Direction currentDirection, Direction destinationDirection, ElevatorState currentState) {
+		
 		int difference = currentFloor - startingFloor;
+		
 		switch (currentState) {
-			// TODO: We should make priorities better:
-			// 1. Idle elevators within a certain distance to the startingFloor (maybe within (numfloors)/2)
+			// Priority from best to worst:
+			// 1. Idle elevators within a a distance of NUM_FLOORS/4
 			// 2. Elevators that can serve the request as an intermediate request
 			// 3. Idle elevators that are farther away
 			// 4. Any other elevator
-		
+			
+			// If the elevator is idle
+			case Idle:
+				// Best case is an idle elevator that is close to the pickup floor
+				if (difference <= Math.ceil(Constants.NUM_FLOORS/4)) {
+					return 4;
+				}
+				// Idle elevators that are far away are given a fair score
+				else {
+					return 2;
+				}
 			// Elevator is currently moving
 			case Moving:
 				// Elevator is moving up
 				if (currentDirection == Direction.UP) {
 					// if starting floor cannot be reached without changing direction
 					if (difference < 0) {
-						return 1; // TODO bad score
-					// if starting floor can be reached and heading in same direction 
+						return 1; 
+					// if starting floor can be reached and heading in same direction, this is 
+					// our second most favorable case
 					} else if (currentDirection == destinationDirection) {
-						return difference; // TODO good score
+						return 3; 
 					}
 					// if starting floor can be reached but needs changing direction
-					return 1; // TODO bad score
+					return 1; 
 				}
 				// Elevator is moving down
 				// if starting floor cannot be reached without changing direction
@@ -153,13 +165,14 @@ public class Scheduler {
 					return 1; // TODO bad score
 				// if starting floor can be reached and heading in same direction
 				} else if (currentDirection == destinationDirection) {
-					return difference; // TODO good score
+					return 3;
 				}
 				// if starting floor can be reached but needs changing direction
-				return 1; // TODO bad score
-			case Idle:
+				return 1; 
+			
+			// any elevator outside of the above cases is given a score of 2
 			default:
-				return 2; // TODO some score
+				return 2; 
 		}
 	}
 

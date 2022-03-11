@@ -50,7 +50,10 @@ public class Elevator implements Runnable {
 	 * The PacketHandler used by the Elevator to communicate with the Scheduler
 	 */
 	private PacketHandler packetHandler;
-
+	/**
+	 * The elevator will exit after this number of consecutive cycles in the IDLE state
+	 */
+	private int consecutiveIdles;
 	/**
 	 * Elevator state machine definition
 	 */
@@ -107,7 +110,8 @@ public class Elevator implements Runnable {
 		this.lamp = new ElevatorLamp();
 		this.motor = new ElevatorMotor(Constants.ELEVATOR_TIME_BETWEEN_FLOORS);
 		elevatorState = ElevatorState.Idle;
-
+		this.consecutiveIdles = 0;
+		
 		this.currentFloor = 1;
 		this.destinationFloor = 1;
 
@@ -159,12 +163,18 @@ public class Elevator implements Runnable {
 					
 					// If we don't receive a message, just stay in idle state
 					if (response == null) { 
+						consecutiveIdles++;
+						if (consecutiveIdles == Constants.IDLE_EXIT_COUNT) {
+							logger.log("Elevator idle for too long...Exiting");
+							System.exit(1);
+						}
 						elevatorState = ElevatorState.Idle;
 					}
 					else {
 						destinationFloor = (int) response[0];
-
+						
 						logger.log("Received instructions from scheduler, new destination floor " + destinationFloor);
+						consecutiveIdles = 0;
 						elevatorState = ElevatorState.Moving;
 					}
 					

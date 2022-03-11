@@ -20,7 +20,11 @@ public class Constants {
 	/** The max byte array size that we will support sending over UDP */
 	public static final int MAX_BUFFER_SIZE = 100;
 	/** The time a UDP Listener will wait before timing out */
-	public static final int TIMEOUT = 10000;
+	public static final int TIMEOUT = 20000;
 	/** the port number for the floor facing scheduler */
 	public static final int SCHEDULER_PORT = 24;
+	/** the port number for the floor facing scheduler in unit tests */
+	public static final int SCHEDULER_TEST_PORT = 23;
+	/** Number of cycles in an idle state that an elevator will stay active for before exiting */
+	public static final int IDLE_EXIT_COUNT = 10;
 }

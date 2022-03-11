@@ -110,7 +110,7 @@ public class PacketHandler {
 			// sets the port based on who sent us a message
 			sendPort = receivePacket.getPort();
 		} catch (SocketTimeoutException e) {
-			System.out.println("Did not receive response for 10 seconds...Exiting");
+			System.out.println("Did not receive response for " + Constants.TIMEOUT/1000 + " seconds...Exiting");
 			System.exit(-1);
 		} catch (IOException e) {
 			e.printStackTrace();

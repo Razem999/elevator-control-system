@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import main.common.Constants;
 import main.common.Instructions;
 import main.floor.*;
 import main.scheduler.*;
@@ -35,7 +36,7 @@ public class FloorTest {
 	 */
 	@BeforeEach
 	void setup() {
-		scheduler = new Scheduler(true, 23);
+		scheduler = new Scheduler(Constants.SCHEDULER_TEST_PORT);
 		floor = new FloorManager(6);
 		
 		// get instructions array
