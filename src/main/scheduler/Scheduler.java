@@ -56,9 +56,7 @@ public class Scheduler {
 			public String toString() {
 				return "DELEGATING";
 			}
-		},
-		;
-		
+		};
 		public abstract SchedulerStates nextState();
 		
 		public abstract String toString();
