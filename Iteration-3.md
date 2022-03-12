@@ -35,6 +35,8 @@ Iteration 3 report
 - UML class diagram
 - UML sequence diagram
 - Documentation
+- Scheduler tests
+- Test suite fixes
 
 ### Vinh
 
