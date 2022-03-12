@@ -1,6 +1,5 @@
 package test;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -32,7 +31,6 @@ public class SchedulerTest {
 	FloorManager floor;
 	SchedulerStates sStates;
 	ElevatorState eStates;
-//	ArrayList<ElevatorAgent> agents;
 	ElevatorAgent agent1;
 	ElevatorAgent agent2;
 	ArrayList<Instructions> instructions = new ArrayList<>();
@@ -72,6 +70,9 @@ public class SchedulerTest {
 		
 	}
 	
+	/**
+	 * Reset all terminals before starting next test
+	 */
 	@AfterEach
 	void reset() {
 		agent1 = null;
@@ -91,9 +92,13 @@ public class SchedulerTest {
 		assertTrue(scheduler.getState() == SchedulerStates.LISTENING);
 	}
 	
+	/**
+	 * Verify that the scheduler's next state is Delegating and the one after is Listening
+	 */
 	@Test
 	void testDelegatingState() {
-		scheduler.getState().nextState();
+		assertTrue(scheduler.getState().nextState() == SchedulerStates.DELEGATING);
+		assertTrue(scheduler.getState().nextState() == SchedulerStates.LISTENING);
 	}
 	
 	@Test
