@@ -18,13 +18,33 @@ import main.common.Constants;
  * A class to handle communication between the scheduler and elevator cars.
  */
 public class ElevatorAgent implements Runnable {
+	/**
+	 * Keeps track of the associated Elevator's current state.
+	 */
 	private ElevatorState currentState;
+	/**
+	 * Keeps track of the associated Elevator's current direction.
+	 */
 	private Direction currentDirection;
+	/**
+	 * Keeps track of the associated Elevator's current floor.
+	 */
 	private int currentFloor;
-
+	/**
+	 * Associated elevator ID.
+	 */
 	private final int elevatorId;
+	/**
+	 * Requests specific to this elevator.
+	 */
 	private final List<Instructions> requests;
+	/**
+	 * PacketHandler instance for communication.
+	 */
 	private final PacketHandler packetHandler;
+	/**
+	 * Logger instance to log messages.
+	 */
 	private final Logger logger;
 	
 	/**
@@ -36,7 +56,7 @@ public class ElevatorAgent implements Runnable {
 	 */
 	public ElevatorAgent(int elevatorId, List<Instructions> requests, int currentFloor) {
 		this.currentState = ElevatorState.Idle;
-		this.currentDirection = Direction.OFF;
+		this.currentDirection = Direction.STOP;
 		this.currentFloor = currentFloor;
 		this.elevatorId = elevatorId;
 		this.requests = requests;
@@ -44,9 +64,29 @@ public class ElevatorAgent implements Runnable {
 		this.logger = new Logger("ELEV-AGENT-" + elevatorId);
 	}
 	
+	/**
+	 * Getter for current elevator state.
+	 * 
+	 * @return ElevatorState - current state.
+	 */
 	public ElevatorState getCurrentState() { return currentState; }
+	/**
+	 * Getter for current elevator direction.
+	 * 
+	 * @return Direction - current direction.
+	 */
 	public Direction getCurrentDirection() { return currentDirection; }
+	/**
+	 * Getter for current elevator floor.
+	 * 
+	 * @return Floor - current floor.
+	 */
 	public int getCurrentFloor() { return currentFloor; }
+	/**
+	 * Getter for elevator ID.
+	 * 
+	 * @return int - associated elevator ID.
+	 */
 	public int getId() { return elevatorId; }
 	
 	/**
@@ -80,7 +120,7 @@ public class ElevatorAgent implements Runnable {
 		} else if (destinationFloor < currentFloor) {
 			currentDirection = Direction.DOWN;
 		} else {
-			currentDirection = Direction.OFF;
+			currentDirection = Direction.STOP;
 		}
 		// update elevator state
 		currentState = ElevatorState.Moving;
@@ -181,7 +221,7 @@ public class ElevatorAgent implements Runnable {
 			byte[] received = packetHandler.receive();
 			logger.log("Received: " + Arrays.toString(received));
 			currentFloor = received[1];
-			Direction direction = received[2] == 0 ? Direction.OFF : received[2] == 1 ? Direction.UP : Direction.DOWN;
+			Direction direction = received[2] == 0 ? Direction.STOP : received[2] == 1 ? Direction.UP : Direction.DOWN;
 			logger.log("Elevator is at floor " + currentFloor + ", heading " + direction);
 			// check if intermediate requests can be dealt with here
 			if (!requests.isEmpty()) {
@@ -197,10 +237,10 @@ public class ElevatorAgent implements Runnable {
 				}
 			}
 			// check if elevator has stopped and reached a destination floor
-			if (direction == Direction.OFF) {
+			if (direction == Direction.STOP) {
 				logger.log("Elevator stopped moving!");
 				ArrayList<Integer> removedIndices = new ArrayList<>();
-				logger.log(instructions.toString());
+				logger.log("Currently servicing requests: " + instructions.toString());
 				for (int i = 0; i < instructions.size(); i++) {
 					// elevator reached pickup floor
 					Instructions temp = instructions.get(i);
@@ -212,7 +252,7 @@ public class ElevatorAgent implements Runnable {
 						removedIndices.add(i);
 					}
 				}
-				logger.log("To be removed: " + removedIndices.toString());
+//				logger.log("To be removed: " + removedIndices.toString());
 				for (int i = removedIndices.size() - 1; i >= 0; i--) {
 					instructions.remove(i);
 				}
@@ -221,7 +261,7 @@ public class ElevatorAgent implements Runnable {
 			if (instructions.isEmpty()) {
 				logger.log("Elevator has finished its requests.");
 				currentState = ElevatorState.Idle;
-				currentDirection = Direction.OFF;
+				currentDirection = Direction.STOP;
 				break;
 			}
 			// send new destination floor

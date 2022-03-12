@@ -181,23 +181,32 @@ public class Scheduler {
 			agentThreads[i].start();
 		}
 
+		// enter main infinite loop
 		while (true) {
+			// move scheduler to listening state
 			currState = SchedulerStates.LISTENING;
-			logger.log("Current state: " + currState + "\n" + this);
+			logger.log("Current state: " + currState + "\nRequests: " + this);
 			response = packetHandler.receive(); // TODO not really a response
 			stringResponse = new String(response, StandardCharsets.UTF_8).substring(0, 2);
+
+			// check if input received is a valid instruction
 			if (stringResponse.equals("UP") || stringResponse.equals("DO")) {
+				// convert instruction bytes to instruction object
 				logger.log("Received Instruction");
 				instruction = ByteConverter.byteArrayToInstructions(response);
+				// send acknowledgement
 				packetHandler.send(new byte[] { 0 });
 				logger.log("Sent acknowledgement");
-
+				// enter delegating state and find optimal elevator
 				logger.log("Finding optimal elevator...");
 				currState = SchedulerStates.DELEGATING;
-				logger.log("Current state: " + currState + "\n" + this);
+				// get best elevator to deal with this
 				ElevatorAgent bestAgent = getBestElevator(instruction.getCurrentFloor(), instruction.getDirection());
+				logger.log("Best agent found is ELEV-AGENT-" + bestAgent.getId());
+				// and add the instructions to their requests queue
 				elevatorRequests.get(bestAgent.getId()).add(instruction);
-				logger.log("Sent Instruction");
+				logger.log("Sent Instruction to Elevator " + bestAgent.getId());
+				logger.log("Current state: " + currState + "\nRequests: " + this);
 			}
 		}
 	}
