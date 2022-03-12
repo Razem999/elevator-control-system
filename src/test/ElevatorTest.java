@@ -5,12 +5,14 @@ package test;
 
 import static org.junit.Assert.assertTrue;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import main.elevator.Elevator;
 import main.elevator.Elevator.ElevatorState;
 import main.scheduler.Scheduler;
+import main.common.PacketHandler;
 
 /**
  * Tests for the Elevator Class
@@ -26,13 +28,19 @@ public class ElevatorTest {
 	void setup() {
 		elevator = new Elevator(123);
 	}
+	
+	@AfterEach
+	void reset() {
+		elevator = null;
+		System.gc();
+	}
 
 	/**
 	 * Test for seeing if getting elevator number is correct
 	 */
 	@Test
 	void elevatorNumberTest() {
-		assertTrue(elevator.getElevatorNumber() == 4);
+		assertTrue(elevator.getElevatorNumber() == 123);
 	}
 
 	/**
