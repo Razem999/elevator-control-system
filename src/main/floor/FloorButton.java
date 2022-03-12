@@ -16,7 +16,7 @@ public class FloorButton {
 	 * Constructor that defaults direction to 'OFF'
 	 */
 	public FloorButton() {
-		arrows = Direction.OFF;
+		arrows = Direction.STOP;
 	}
 	
 	/**
@@ -49,6 +49,6 @@ public class FloorButton {
 	 * Simulates elevator arriving and turning the button off
 	 */
 	public void elevatorArrives() {
-		arrows = Direction.OFF;
+		arrows = Direction.STOP;
 	}
 }

@@ -7,16 +7,19 @@ Iteration 3 report
 ### Bill
 
 - UML sequence diagram
-- Message byte array design
+- Byte array designs
 - Floor->Scheduler communication
 - Scheduler->Floor communication
+- Scheduler state diagram
+- Scheduler state implementation
 
 ### Deen
 
 - Elevator refactor to UDP
 - Elevator->Scheduler communication
 - Elevator tests
-- Elevator state machine changes
+- Elevator state machine implementation
+- Elevator state machine diagram
 
 ### James
 
@@ -24,15 +27,20 @@ Iteration 3 report
 - Floor->Scheduler communication
 - Scheduler->Floor communication
 - Main refactor to constants
+- Scheduler->Elevator communication
+- Documentation
 
 ### Razem
 
-- UML class diagrams
+- UML class diagram
 - UML sequence diagram
-- Scheduler tests
+- Documentation
 
 ### Vinh
 
 - Elevator refactor to UDP
 - Scheduler->Elevator communication
-- Scheduler algorithm
+- Scheduler best elevator algorithm
+- ElevatorAgent moving algorithm
+- Elevator state machine changes
+- Documentation
