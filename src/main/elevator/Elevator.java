@@ -177,6 +177,7 @@ public class Elevator implements Runnable {
 						consecutiveIdles = 0;
 						elevatorState = ElevatorState.Moving;
 					}
+					System.out.println();
 					
 					break;
 
@@ -205,6 +206,7 @@ public class Elevator implements Runnable {
 					}
 
 					currentFloor += direction;
+					System.out.println();
 					break;
 			}
 		}

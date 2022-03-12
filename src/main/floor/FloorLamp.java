@@ -17,7 +17,7 @@ public class FloorLamp {
 	 * @param direction
 	 */
 	public FloorLamp() {
-		this.direction = Direction.OFF;
+		this.direction = Direction.STOP;
 	}
 	
 	/**
