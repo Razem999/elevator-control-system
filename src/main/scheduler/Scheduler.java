@@ -50,16 +50,6 @@ public class Scheduler {
 				return "DELEGATING";
 			}
 		},
-		CHANGEFLOOR { // State when elevator reaches its destination floor and scheduler logs this
-			public String toString() {
-				return "CHANGEFLOOR";
-			}
-		},
-		PROCESSARRIVAL { // State when floor confirms elevator reaches it and scheduler logs this
-			public String toString() {
-				return "FLOORARRIVES";
-			}
-		}
 	};
 
 	/** PacketHandler for dealing with UDP communication */
@@ -192,7 +182,8 @@ public class Scheduler {
 		}
 
 		while (true) {
-			logger.log("Waiting..");
+			currState = SchedulerStates.LISTENING;
+			logger.log("Current state: " + currState + "\n" + this);
 			response = packetHandler.receive(); // TODO not really a response
 			stringResponse = new String(response, StandardCharsets.UTF_8).substring(0, 2);
 			if (stringResponse.equals("UP") || stringResponse.equals("DO")) {
@@ -202,6 +193,8 @@ public class Scheduler {
 				logger.log("Sent acknowledgement");
 
 				logger.log("Finding optimal elevator...");
+				currState = SchedulerStates.DELEGATING;
+				logger.log("Current state: " + currState + "\n" + this);
 				ElevatorAgent bestAgent = getBestElevator(instruction.getCurrentFloor(), instruction.getDirection());
 				elevatorRequests.get(bestAgent.getId()).add(instruction);
 				logger.log("Sent Instruction");
