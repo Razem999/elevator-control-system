@@ -41,15 +41,25 @@ public class Scheduler {
 	 */
 	public enum SchedulerStates {
 		LISTENING { // Reading in instructions from floor
+			public SchedulerStates nextState() {
+				return DELEGATING;
+			}
+			
 			public String toString() {
 				return "LISTENING";
 			}
 		},
 		DELEGATING { // Sending instructions to an elevator
+			public SchedulerStates nextState() {
+				return LISTENING;
+			}
 			public String toString() {
 				return "DELEGATING";
 			}
-		},
+		};
+		public abstract SchedulerStates nextState();
+		
+		public abstract String toString();
 	};
 
 	/** PacketHandler for dealing with UDP communication */
@@ -113,7 +123,7 @@ public class Scheduler {
 	 * @param destinationDirection the direction of the instruction
 	 * @return integer between 1 and 4 representing that elevator's score to handle a request, higher is better
 	 */
-	private int getFloorDifference(int currentFloor, int startingFloor, Direction currentDirection, Direction destinationDirection, ElevatorState currentState) {
+	public int getFloorDifference(int currentFloor, int startingFloor, Direction currentDirection, Direction destinationDirection, ElevatorState currentState) {
 		
 		int difference = currentFloor - startingFloor;
 		
