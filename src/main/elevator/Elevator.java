@@ -3,25 +3,17 @@
  */
 package main.elevator;
 
-import main.Main;
-import main.common.Instructions;
+import main.common.Constants;
 import main.common.Logger;
-import main.scheduler.Scheduler;
+import main.common.PacketHandler;
 
 /**
- * TODO
+ * The Elevator communicates with the Scheduler to travel to various Floors.
  */
 public class Elevator implements Runnable {
-	
-	private static final int TIME_BETWEEN_FLOORS = 500;
-	
+
 	/** logger instance to handle console logging */
 	private Logger logger;
-	
-	/**
-	 * Scheduler reference for contact
-	 */
-	private Scheduler scheduler;
 	/**
 	 * Assigned elevator number
 	 */
@@ -43,9 +35,9 @@ public class Elevator implements Runnable {
 	 */
 	private ElevatorMotor motor;
 	/**
-	 * Instructions an elevator would take
+	 * The destination the Elevator wants to go to
 	 */
-	private Instructions instructions;
+	private int destinationFloor;
 	/**
 	 * Keeps track of the current state of the elevator
 	 */
@@ -54,134 +46,191 @@ public class Elevator implements Runnable {
 	 * The last floor the elevator has been on
 	 */
 	private int currentFloor;
-	
+	/**
+	 * The PacketHandler used by the Elevator to communicate with the Scheduler
+	 */
+	private PacketHandler packetHandler;
+	/**
+	 * The elevator will exit after this number of consecutive cycles in the IDLE state
+	 */
+	private int consecutiveIdles;
 	/**
 	 * Elevator state machine definition
 	 */
-	private enum ElevatorState {
+	public enum ElevatorState {
 		Idle {
 			public ElevatorState nextState() {
 				return Moving;
 			}
+
 			public String toString() {
 				return "IDLE";
-			}			
+			}
 		},
-		
+
 		Moving {
 			public ElevatorState nextState() {
-				return Arriving;
+				return Idle;
 			}
+
 			public String toString() {
 				return "MOVING";
 			}
 		},
 
-		Arriving {
-			public ElevatorState nextState() {
-				return Idle;
-			}
-			public String toString() {
-				return "ARRIVING";
-			}
-		},
-//		Currently commented out Error state, looks like erroring may be an action, not a state
-//		Error {
-//			public ElevatorState nextState() {
-//				return Idle;
-//			}
-//			public String toString() {
-//				return "ERROR";
-//			}
-//		}
+		// Currently commented out Error state, looks like erroring may be an action,
+		// not a state
+		 /** Error {
+		 public ElevatorState nextState() {
+		 return Idle;
+		 }
+		 public String toString() {
+		 return "ERROR";
+		 }
+		 } */
 		;
-		
+
 		public abstract ElevatorState nextState();
+
 		public abstract String toString();
 	}
-	
+
 	/**
-	 * Initialize an elevator that takes in a scheduler and elevator
-	 * @param scheduler
+	 * Initialize an elevator that takes in an elevator number
+	 * 
 	 * @param elevatorNumber
 	 */
-	public Elevator(Scheduler scheduler, int elevatorNumber) {
-		this.scheduler = scheduler;
+	public Elevator(int elevatorNumber) {
+		this.logger = new Logger("ELEV " + elevatorNumber);
+		int port = Constants.ELEVATOR_STARTING_PORT_NUMBER + elevatorNumber;
+
 		this.elevatorNumber = elevatorNumber;
-		this.buttons = new ElevatorButton(Main.NUM_FLOORS);
+		this.buttons = new ElevatorButton(Constants.NUM_FLOORS);
 		this.door = new ElevatorDoor();
 		this.lamp = new ElevatorLamp();
-		this.motor = new ElevatorMotor(TIME_BETWEEN_FLOORS);
+		this.motor = new ElevatorMotor(Constants.ELEVATOR_TIME_BETWEEN_FLOORS);
 		elevatorState = ElevatorState.Idle;
-		this.logger = new Logger("ELEV " + elevatorNumber);
-		currentFloor = 0;
+		this.consecutiveIdles = 0;
+		
+		this.currentFloor = 1;
+		this.destinationFloor = 1;
+
+		packetHandler = new PacketHandler(Constants.ELEVATOR_AGENT_STARTING_PORT_NUMBER + elevatorNumber, port,
+				Constants.ELEVATOR_TIME_BETWEEN_FLOORS);
+
 		logger.log("Starting...");
 	}
-	
+
 	/**
-	 * Runs the Elevator thread that receives instructions from the scheduler and completes the instructions
+	 * Returns an array of size amount containing Elevator Threads
+	 * 
+	 * @param amount How many Elevator Threads to create
+	 * @return An array of Elevator Threads
+	 */
+	public static Thread[] generateElevators(int amount) {
+		Thread[] elevators = new Thread[amount];
+		for (int i = 0; i < amount; i++) {
+			elevators[i] = new Thread(new Elevator(i));
+		}
+
+		return elevators;
+	}
+
+	// getters/setters for unit tests
+	public ElevatorState getState() {
+		return elevatorState;
+	}
+
+	public void setState(ElevatorState state) {
+		elevatorState = state;
+	}
+
+	/**
+	 * Runs the Elevator thread that receives instructions from the scheduler and
+	 * completes the instructions
 	 */
 	public void run() {
-		while(true) {
-			synchronized(scheduler) {
-				logger.log("Current state: " + elevatorState);
-				switch (elevatorState) {
-					case Idle:
+		while (true) {
+			logger.log("Current state: " + elevatorState);
+			byte direction = (byte) ((currentFloor == destinationFloor) ? 0
+					: (currentFloor > destinationFloor ? -1 : 1));
+			byte[] status = { 1, (byte) currentFloor, direction }, response = null;
+
+			switch (elevatorState) {
+				case Idle:
+					logger.log("Awaiting instructions from scheduler...");
+					response = packetHandler.receiveTimeout();
+					
+					// If we don't receive a message, just stay in idle state
+					if (response == null) { 
+						consecutiveIdles++;
+						if (consecutiveIdles == Constants.IDLE_EXIT_COUNT) {
+							logger.log("Elevator idle for too long...Exiting");
+							System.exit(1);
+						}
+						elevatorState = ElevatorState.Idle;
+					}
+					else {
+						destinationFloor = (int) response[0];
 						
-						// if there are errors to check for, they should be done at the start of every state's case
-						
-						logger.log("Looking for instructions from scheduler...");
-						instructions = scheduler.popInstructions();
-						logger.log("Received instructions from scheduler");
-						
+						logger.log("Received instructions from scheduler, new destination floor " + destinationFloor);
+						consecutiveIdles = 0;
 						elevatorState = ElevatorState.Moving;
-						break;
+					}
+					System.out.println();
+					
+					break;
 
-					case Moving:
-						int destinationFloor = instructions.getDestinationFloor();
-						
-						logger.log("Moving from floor " + currentFloor + " to destination floor " + destinationFloor);
-						
-						System.out.println("LOOKIE HERE: " + destinationFloor + " " + currentFloor);
-						
-						if (destinationFloor == currentFloor)
-						{
-							logger.log("Arriving at destination floor " + destinationFloor);
-							elevatorState = ElevatorState.Arriving;							
-							break;
-						}
-						
-						
-						
-						try {
-							Thread.sleep(TIME_BETWEEN_FLOORS);
-							currentFloor =  destinationFloor > currentFloor ? currentFloor + 1 : currentFloor - 1;
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-						
-						break;
-
-						
-					case Arriving:
-
-						logger.log("Completed instruction " + instructions);
-						logger.log("Notifying scheduler...");
-						scheduler.completeInstructions(instructions);
-						
+				case Moving:
+					logger.log("Moving from floor " + currentFloor + " to destination floor " + destinationFloor);
+					packetHandler.send(status);
+					
+					if (destinationFloor == currentFloor) {
+						logger.log("Arriving at destination floor " + destinationFloor);
 						elevatorState = ElevatorState.Idle;
 						break;
-				}
+					}
+
+					response = packetHandler.receiveTimeout();
+					if (response == null) {
+						logger.log("No message received, still moving");
+						break;
+					} else {
+						try {
+							Thread.sleep(Constants.ELEVATOR_TIME_BETWEEN_FLOORS);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+							System.exit(-1);
+						}
+						destinationFloor = (int) response[0];
+					}
+
+					currentFloor += direction;
+					System.out.println();
+					break;
 			}
 		}
 	}
-	
+
 	/**
 	 * Getting the associated elevator number
-	 * @return int - The assigned elevator number
+	 * 
+	 * @return The assigned elevator number
 	 */
 	public int getElevatorNumber() {
 		return this.elevatorNumber;
+	}
+
+	/**
+	 * Instantiates and runs NUM_CARS Elevator threads
+	 * 
+	 * @param args
+	 */
+	public static void main(String args[]) {
+		Thread[] elevators = Elevator.generateElevators(Constants.NUM_CARS);
+		for (int i = 0; i < elevators.length; i++) {
+			elevators[i].start();
+		}
 	}
 
 }

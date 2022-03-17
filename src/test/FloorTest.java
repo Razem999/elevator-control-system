@@ -3,14 +3,20 @@ package test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import main.common.Constants;
 import main.common.Instructions;
 import main.floor.*;
 import main.scheduler.*;
@@ -22,7 +28,7 @@ import main.scheduler.*;
 public class FloorTest {
 
 	Scheduler scheduler;
-	Floor floor;
+	FloorManager floor;
 	ArrayList<Instructions> instructions = new ArrayList<>();
 	ArrayList<String[]> commandsList = new ArrayList<>();
 	
@@ -31,8 +37,8 @@ public class FloorTest {
 	 */
 	@BeforeEach
 	void setup() {
-		scheduler = new Scheduler();
-		floor = new Floor(scheduler, 2);
+		scheduler = new Scheduler(Constants.SCHEDULER_TEST_PORT);
+		floor = new FloorManager(6);
 		
 		// get instructions array
 		floor.getGetInput("src/test/mockInstructions.txt");
@@ -50,16 +56,30 @@ public class FloorTest {
 			e.printStackTrace();
 		}
 	}
+	
+	@AfterEach
+	void reset() {
+		scheduler = null;
+		floor = null;
+		System.gc();
+	}
 
 	/**
 	 * Testing the list of commands to see if they are valid
 	 */
 	@Test
 	void testVerify() {
+		for (int i = 0; i < instructions.size(); i++) {
+			System.out.println(instructions.get(i).toString());
+			System.out.flush();
+		}
+		
 		assertTrue(floor.getVerifyInput(commandsList.get(0)));
 		assertFalse(floor.getVerifyInput(commandsList.get(1)));
 		assertFalse(floor.getVerifyInput(commandsList.get(2)));
 		assertFalse(floor.getVerifyInput(commandsList.get(3)));
+		assertFalse(floor.getVerifyInput(commandsList.get(4)));
+		
 	}
 	
 	
@@ -70,15 +90,5 @@ public class FloorTest {
 	void getInputFromFile() {
 		assertTrue(floor.getInstructions().get(0).getDestinationFloor() == instructions.get(0).getDestinationFloor());
 	}
-	
-	/**
-	 * Testing to see if correct floor number is assigned and retrieved
-	 */
-	@Test
-	void floorNumberTest() {
-		System.out.println("Setting floor number");
-		floor.setFloorNumber(3);
-		assertTrue(floor.getFloorNumber() == 3);
-	}
-	
+
 }

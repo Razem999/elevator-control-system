@@ -1,11 +1,17 @@
 package main.scheduler;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.List;
 
+import main.common.ByteConverter;
+import main.common.Constants;
 import main.common.Direction;
 import main.common.Instructions;
 import main.common.Logger;
+import main.common.PacketHandler;
+import main.elevator.Elevator.ElevatorState;
 import main.elevator.ElevatorButton;
 import main.floor.FloorButton;
 
@@ -14,194 +20,213 @@ import main.floor.FloorButton;
  * elevator components
  */
 public class Scheduler {
+	private static final int FLOOR_MANAGER_PORT = 50;
 	/** logger instance to handle console logging */
 	private Logger logger;
 	/**
-	 * Queue for the instructions
+	 * ArrayList of Lists corresponding to each elevator's requests list
 	 */
-	private ArrayList<Instructions> queue;
+	private ArrayList<List<Instructions>> elevatorRequests;
 	/**
-	 * Arraylist of completed instructions
+	 * ArrayList to keep track of elevator agents
 	 */
-	private ArrayList<Instructions> completed;
-	private int numCompleted; // temporary variable for stopping program
-	
+	private ArrayList<ElevatorAgent> agents;
 	/**
 	 * Variable to track the current state of scheduler
 	 */
 	private SchedulerStates currState = SchedulerStates.LISTENING;
-	
+
 	/**
 	 * ENUM to represent the scheduler states
 	 */
 	public enum SchedulerStates {
 		LISTENING { // Reading in instructions from floor
+			public SchedulerStates nextState() {
+				return DELEGATING;
+			}
+			
 			public String toString() {
 				return "LISTENING";
 			}
 		},
 		DELEGATING { // Sending instructions to an elevator
+			public SchedulerStates nextState() {
+				return LISTENING;
+			}
 			public String toString() {
 				return "DELEGATING";
 			}
-		},
-		CHANGEFLOOR { // State when elevator reaches its destination floor and scheduler logs this
-			public String toString() {
-				return "CHANGEFLOOR";
-			}
-		},
-		PROCESSARRIVAL { // State when floor confirms elevator reaches it and scheduler logs this
-			public String toString() {
-				return "FLOORARRIVES";
-			}
-		}
+		};
+		public abstract SchedulerStates nextState();
+		
+		public abstract String toString();
 	};
-	
+
+	/** PacketHandler for dealing with UDP communication */
+	private PacketHandler packetHandler;
+
 	/**
 	 * Default constructor
 	 */
-	public Scheduler() {
-		queue = new ArrayList<>();
-		completed = new ArrayList<>();
-		numCompleted = 0;
+	public Scheduler(int portNum) {
+		elevatorRequests = new ArrayList<>();
+		agents = new ArrayList<>();
+		for (int i = 0; i < Constants.NUM_CARS; i++) {
+			List<Instructions> requests = Collections.synchronizedList(new ArrayList<Instructions>());
+			elevatorRequests.add(requests);
+			this.agents.add(new ElevatorAgent(i, requests, 1));
+		}
+		packetHandler = new PacketHandler(FLOOR_MANAGER_PORT, portNum, Constants.TIMEOUT);
 		this.logger = new Logger("SCHED");
 		logger.log("Starting...");
 	}
-	
-	/**
-	 * Getter for numCompleted
-	 */
 
-	public int getNumCompleted() {
-		return numCompleted;
+	// getter for unit tests
+	public SchedulerStates getState() {
+		return currState;
 	}
-	
+
 	/**
-	 * Function to send messages to floor
+	 * Pretty string to show the scheduler's lists
 	 * 
-	 */
-	public synchronized boolean notifyFloor(int floorNumber) {
-		while (!hasCompleted()) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		currState = SchedulerStates.PROCESSARRIVAL;
-//		boolean elevatorHasReachedFloor = false;
-		// for now, just return true and pop one element off of completed
-		// once other logic and more floors are added, we can handle those cases
-		logger.log("Removing instructions from completed...");
-		logger.log("Instructions removed: " + completed.remove(0));
-		logger.log("Current state: " + currState + "\n" + this);
-		logger.log("Notifying floor " + floorNumber);
-		numCompleted += 1;
-		return true;
-	}
-
-	/**
-	 * Function to send messages to elevator
-	 * 
-	 */
-	public void notifyElevator() {
-
-	}
-
-	/**
-	 * Adds instructions to the queue
-	 * @param instructions
-	 */
-	public synchronized void addInstructions(Instructions instructions) {;
-		currState = SchedulerStates.LISTENING;
-		
-		logger.log("Adding instructions to queue...");
-		queue.add(instructions);
-		logger.log("Instructions added: " + instructions);
-		logger.log("Current state: " + currState + "\n" + this);
-		logger.log("Notifying all...\n");
-		notifyAll();
-	}
-
-	/**
-	 * Checks if the queue is not empty with instructions
-	 * @return boolean
-	 */
-	public boolean hasInstructions() {
-		return !queue.isEmpty();
-	}
-	
-	/**
-	 * Checks if the completed queue is not empty with instructions
-	 * @return boolean
-	 */
-	public boolean hasCompleted() {
-		return !completed.isEmpty();
-	}
-
-	/**
-	 * Removes the instructions from the queue and returns it
-	 * @return the instruction that was removed
-	 */
-	public synchronized Instructions popInstructions() {
-		while (!hasInstructions()) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		currState = SchedulerStates.DELEGATING;
-		
-		logger.log("Removing instructions from queue...");
-		Instructions removed = queue.remove(0);
-		logger.log("Removed instructions: " + removed);
-		logger.log("Current state: " + currState + "\n" + this);
-		logger.log("Notifying all...");
-		notifyAll();
-		logger.log("Sending instructions to elevator\n");
-		return removed;
-	}
-
-	/** 
-	 * Adds the given instructions to the listed of completed instructions
-	 * @param instructions
-	 */
-	public synchronized void completeInstructions(Instructions instructions) {
-		currState = SchedulerStates.CHANGEFLOOR;
-		logger.log("Adding instructions to completed...");
-		completed.add(instructions);
-		logger.log("Instructions added: " + instructions);
-		logger.log("Current state: " + currState + "\n" + this);
-		logger.log("Notifying all...\n");
-		notifyAll();
-	}
-
-	/**
-	 * Function that returns the value of an elevator button press (which floor has
-	 * been requested)
-	 * 
-	 * @return an integer representing the requested floor
-	 */
-	private int getElevatorButtonPress(ElevatorButton elevatorButton) {
-		return elevatorButton.getButtonPressed();
-	}
-
-	/**
-	 * Function that returns the value of a floor button press (elevator going up or
-	 * down)
-	 * 
-	 * @return an enum value (UP/DOWN)
-	 */
-	private Direction getFloorButtonPress(FloorButton floorButton) {
-		return floorButton.getDirectionalLamp();
-	}
-
-	/**
-	 * Pretty string to show the scheduler's queue and completed arrays
 	 * @return string
 	 */
 	public String toString() {
-		return "Q:" + queue + "\nC:" + completed;
+		return elevatorRequests.toString();
+	}
+
+	/**
+	 * Helper method to find the best elevator agent for a request.
+	 * 
+	 * @param startingFloor int - starting floor.
+	 * @param direction Direction - direction the elevator will be moving.
+	 * @return
+	 */
+	private ElevatorAgent getBestElevator(int startingFloor, Direction direction) {
+		ElevatorAgent bestAgent = null;
+		int bestScore = 0;
+		for (ElevatorAgent agent : agents) {
+			int score = getFloorDifference(agent.getCurrentFloor(), startingFloor, agent.getCurrentDirection(), direction, agent.getCurrentState());
+			if (score >= bestScore) {
+				bestScore = score;
+				bestAgent = agent;
+			}
+		}
+		return bestAgent;
+	}
+	
+	/**
+	 * This function assigns an elevator a score for handling a given request, where higher is better
+	 * @param currentFloor the current floor of the elevator
+	 * @param startingFloor the starting floor for the instruction
+	 * @param currentDirection the current direction of the elevator
+	 * @param destinationDirection the direction of the instruction
+	 * @return integer between 1 and 4 representing that elevator's score to handle a request, higher is better
+	 */
+	public int getFloorDifference(int currentFloor, int startingFloor, Direction currentDirection, Direction destinationDirection, ElevatorState currentState) {
+		
+		int difference = currentFloor - startingFloor;
+		
+		switch (currentState) {
+			// Priority from best to worst:
+			// 1. Idle elevators within a a distance of NUM_FLOORS/4
+			// 2. Elevators that can serve the request as an intermediate request
+			// 3. Idle elevators that are farther away
+			// 4. Any other elevator
+			
+			// If the elevator is idle
+			case Idle:
+				// Best case is an idle elevator that is close to the pickup floor
+				if (difference <= Math.ceil(Constants.NUM_FLOORS/4)) {
+					return 4;
+				}
+				// Idle elevators that are far away are given a fair score
+				else {
+					return 2;
+				}
+			// Elevator is currently moving
+			case Moving:
+				// Elevator is moving up
+				if (currentDirection == Direction.UP) {
+					// if starting floor cannot be reached without changing direction
+					if (difference < 0) {
+						return 1; 
+					// if starting floor can be reached and heading in same direction, this is 
+					// our second most favorable case
+					} else if (currentDirection == destinationDirection) {
+						return 3; 
+					}
+					// if starting floor can be reached but needs changing direction
+					return 1; 
+				}
+				// Elevator is moving down
+				// if starting floor cannot be reached without changing direction
+				if (difference > 0) {
+					return 1; // TODO bad score
+				// if starting floor can be reached and heading in same direction
+				} else if (currentDirection == destinationDirection) {
+					return 3;
+				}
+				// if starting floor can be reached but needs changing direction
+				return 1; 
+			
+			// any elevator outside of the above cases is given a score of 2
+			default:
+				return 2; 
+		}
+	}
+
+	/**
+	 * Main run method for the scheduler thread
+	 */
+	public void run() {
+		byte[] response;
+		Instructions instruction;
+		String stringResponse;
+
+		// start elevator agents
+		Thread[] agentThreads = new Thread[Constants.NUM_CARS];
+		for (int i = 0; i < agents.size(); i++) {
+			agentThreads[i] = new Thread(agents.get(i));
+			agentThreads[i].start();
+		}
+
+		// enter main infinite loop
+		while (true) {
+			// move scheduler to listening state
+			currState = SchedulerStates.LISTENING;
+			logger.log("Current state: " + currState + "\nRequests: " + this);
+			response = packetHandler.receive(); // TODO not really a response
+			stringResponse = new String(response, StandardCharsets.UTF_8).substring(0, 2);
+
+			// check if input received is a valid instruction
+			if (stringResponse.equals("UP") || stringResponse.equals("DO")) {
+				// convert instruction bytes to instruction object
+				logger.log("Received Instruction");
+				instruction = ByteConverter.byteArrayToInstructions(response);
+				// send acknowledgement
+				packetHandler.send(new byte[] { 0 });
+				logger.log("Sent acknowledgement");
+				// enter delegating state and find optimal elevator
+				logger.log("Finding optimal elevator...");
+				currState = SchedulerStates.DELEGATING;
+				// get best elevator to deal with this
+				ElevatorAgent bestAgent = getBestElevator(instruction.getCurrentFloor(), instruction.getDirection());
+				logger.log("Best agent found is ELEV-AGENT-" + bestAgent.getId());
+				// and add the instructions to their requests queue
+				elevatorRequests.get(bestAgent.getId()).add(instruction);
+				logger.log("Sent Instruction to Elevator " + bestAgent.getId());
+				logger.log("Current state: " + currState + "\nRequests: " + this);
+			}
+		}
+	}
+
+	/**
+	 * Main function
+	 * @param args String[] - unused.
+	 */
+	public static void main(String[] args) {
+		Scheduler scheduler = new Scheduler(Constants.SCHEDULER_PORT);
+		scheduler.run();
 	}
 }

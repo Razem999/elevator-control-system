@@ -13,11 +13,11 @@ public class FloorLamp {
 	private Direction direction;
 	
 	/**
-	 * Constructor that accepts a Direction value of UP/DOWN
+	 * Constructor that defaults to the 'OFF' state
 	 * @param direction
 	 */
-	public FloorLamp(Direction direction) {
-		this.direction = direction;
+	public FloorLamp() {
+		this.direction = Direction.STOP;
 	}
 	
 	/**

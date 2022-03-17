@@ -16,5 +16,10 @@ public enum Direction {
 		public String toString() {
 			return "DOWN";
 		}
+	},
+	STOP {
+		public String toString() {
+			return "STOP";
+		}
 	}
 }
