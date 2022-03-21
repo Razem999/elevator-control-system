@@ -1,10 +1,12 @@
 package test;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Date;
 
 import main.common.*;
+import main.common.Input.Instructions;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -32,14 +34,8 @@ public class CommonTest {
 	 */
 	@Test
 	void checkTime() {
-		Date testTime;
-		
-		try {
-			testTime = new SimpleDateFormat("hh:mm:ss.mmm").parse("14:05:15.0");
-			assertTrue(instruction.getTime().equals(testTime));
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
+		LocalTime testTime = LocalTime.parse("14:05:15.0");
+		assertTrue(instruction.getTime().equals(testTime));
 	}
 	
 	/**
@@ -63,7 +59,7 @@ public class CommonTest {
 	 */
 	@Test
 	void checkString() {
-		assertTrue(instruction.toString().equals("INS:[Thu Jan 01 14:00:15 EST 1970,UP,3,4]"));
+		assertTrue(instruction.toString().equals("INS:[14:05:15,UP,3,4]"));
 	}
 	
 	/**

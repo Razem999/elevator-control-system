@@ -17,7 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import main.common.Constants;
-import main.common.Instructions;
+import main.common.Input.Instructions;
 import main.floor.*;
 import main.scheduler.*;
 

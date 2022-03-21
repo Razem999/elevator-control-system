@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import main.common.Constants;
 import main.common.Direction;
-import main.common.Instructions;
+import main.common.Input.Instructions;
 import main.elevator.Elevator;
 import main.elevator.Elevator.ElevatorState;
 import main.floor.FloorManager;
@@ -98,7 +98,7 @@ public class SchedulerTest {
 	@Test
 	void testDelegatingState() {
 		assertTrue(scheduler.getState().nextState() == SchedulerStates.DELEGATING);
-		assertTrue(scheduler.getState().nextState() == SchedulerStates.LISTENING);
+		assertTrue(scheduler.getState().nextState().nextState() == SchedulerStates.LISTENING);
 	}
 	
 	@Test
