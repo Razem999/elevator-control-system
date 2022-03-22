@@ -107,7 +107,7 @@ public class Elevator implements Runnable {
 		System.out.println(port);
 		this.elevatorNumber = elevatorNumber;
 		this.buttons = new ElevatorButton(Constants.NUM_FLOORS);
-		this.door = new ElevatorDoor();
+		this.door = new ElevatorDoor(elevatorNumber, 0);
 		this.lamp = new ElevatorLamp();
 		this.motor = new ElevatorMotor(Constants.ELEVATOR_TIME_BETWEEN_FLOORS);
 		elevatorState = ElevatorState.Idle;
