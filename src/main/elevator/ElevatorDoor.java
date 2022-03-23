@@ -27,7 +27,7 @@ public class ElevatorDoor {
 	 */
 	public ElevatorDoor(int elevatorNumber) {
 		this.isDoorOpen = true;
-		int port = Constants.ELEVATOR_STARTING_PORT_NUMBER + (elevatorNumber * Constants.NEW_ELEVATOR_INCREMENT) + Constants.ELEVATOR_DOOR_PORT_NUMBER;
+		int port = Constants.ELEVATOR_STARTING_PORT_NUMBER + (elevatorNumber * Constants.ELEVATOR_INCREMENT) + Constants.ELEVATOR_DOOR_PORT_NUMBER;
 		
 	}
 	

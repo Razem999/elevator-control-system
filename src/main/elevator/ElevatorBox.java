@@ -3,6 +3,7 @@ package main.elevator;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.common.Constants;
 import main.scheduler.ElevatorAgent;
 
 public class ElevatorBox {
@@ -22,8 +23,13 @@ public class ElevatorBox {
 	    
 	
 	public synchronized void passengerEnter() {
-		eDoor.openDoor();
-		Thread.sleep(Constants.DOOR_OPEN);
+		eDoor.toggleDoorState();
+		try {
+			Thread.sleep(Constants.DOOR_OPEN);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	    while (error) {
 	        try {
 	            Thread.sleep(Constants.DOOR_OPEN);
@@ -31,20 +37,25 @@ public class ElevatorBox {
 	            return;
 	        }
 	    }
-	    eDoor.closeDoor();
+	    eDoor.toggleDoorState();
 	    // Elevator starts moving (motor methods)
 	    
 	}
 	    
 	public synchronized void passengerExit() {
-		eDoor.openDoor();
-		Thread.sleep(Constants.DOOR_OPEN);
+		eDoor.toggleDoorState();
+		try {
+			Thread.sleep(Constants.DOOR_OPEN);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	    while (error) {
 	        try {
 	            Thread.sleep(Constants.DOOR_OPEN);
 	        } catch (InterruptedException e) {}
 	    }
-	    eDoor.closeDoor();
+	    eDoor.toggleDoorState();
 	    // Elevator is idle/moving (check for instructions)
 	}
 	
