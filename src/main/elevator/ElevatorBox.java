@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import main.common.Constants;
-import main.scheduler.ElevatorAgent;
 
 public class ElevatorBox {
 
