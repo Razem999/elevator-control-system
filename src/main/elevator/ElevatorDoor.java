@@ -40,17 +40,10 @@ public class ElevatorDoor {
 	}
 	
 	/**
-	 * Sets elevator doors to open
+	 * Toggles between door states
 	 */
-	public void openDoor() {
-		this.isDoorOpen = true;
-	}
-	
-	/**
-	 * Sets elevator doors to close
-	 */
-	public void closeDoor() {
-		this.isDoorOpen = false;
+	public void toggleDoorState() {
+		isDoorOpen = !isDoorOpen;
 	}
 	
 }
