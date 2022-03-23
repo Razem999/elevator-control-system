@@ -15,6 +15,9 @@ public class ElevatorBox {
 	 * Reference of the Elevator Motor
 	 */
 	private ElevatorMotor eMotor;
+	/**
+	 * Faults that arise when the elevator performs in an unexpected way
+	 */
 	private boolean error;
 	    
 	
