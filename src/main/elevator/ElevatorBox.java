@@ -26,7 +26,6 @@ public class ElevatorBox {
 		try {
 			Thread.sleep(Constants.DOOR_OPEN_TIME);
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 	    while (error) {
@@ -46,7 +45,6 @@ public class ElevatorBox {
 		try {
 			Thread.sleep(Constants.DOOR_OPEN_TIME);
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 	    while (error) {
