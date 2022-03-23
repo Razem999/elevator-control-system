@@ -20,9 +20,10 @@ public class ElevatorBox {
 	
 	public synchronized void passengerEnter() {
 		eDoor.openDoor();
+		Thread.sleep(Constants.DOOR_OPEN);
 	    while (error) {
 	        try {
-	            Thread.sleep(4000);
+	            Thread.sleep(Constants.DOOR_OPEN);
 	        } catch (InterruptedException e) {
 	            return;
 	        }
@@ -34,9 +35,10 @@ public class ElevatorBox {
 	    
 	public synchronized void passengerExit() {
 		eDoor.openDoor();
+		Thread.sleep(Constants.DOOR_OPEN);
 	    while (error) {
 	        try {
-	            Thread.sleep(4000);
+	            Thread.sleep(Constants.DOOR_OPEN);
 	        } catch (InterruptedException e) {}
 	    }
 	    eDoor.closeDoor();
