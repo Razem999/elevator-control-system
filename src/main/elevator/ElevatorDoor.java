@@ -14,10 +14,8 @@ public class ElevatorDoor {
 	
 	/**
 	 * Represents the state of the door
-	 * 0 indicates the door is closed
-	 * 1 indicates the door is open
 	 */
-	private int doorState;
+	private boolean isDoorOpen;
 	
 	/**
 	 * The PacketHandler used by the ElevatorDoor to communicate with the Elevator
@@ -27,8 +25,8 @@ public class ElevatorDoor {
 	/**
 	 * Initializing elevator door state to closed
 	 */
-	public ElevatorDoor(int elevatorNumber, int doorState) {
-		this.doorState = 0;
+	public ElevatorDoor(int elevatorNumber) {
+		this.isDoorOpen = true;
 		int port = Constants.ELEVATOR_STARTING_PORT_NUMBER + (elevatorNumber * Constants.NEW_ELEVATOR_INCREMENT) + Constants.ELEVATOR_DOOR_PORT_NUMBER;
 		
 	}
@@ -37,26 +35,22 @@ public class ElevatorDoor {
 	 * Gives information on the door opening or not
 	 * @return The door state
 	 */
-	public boolean isDoorOpen() {
-		if (doorState == 0) {
-			return false;
-		} else {
-			return true;
-		}
+	public boolean getIsDoorOpen() {
+		return isDoorOpen;
 	}
 	
 	/**
 	 * Sets elevator doors to open
 	 */
 	public void openDoor() {
-		this.doorState = 1;
+		this.isDoorOpen = true;
 	}
 	
 	/**
 	 * Sets elevator doors to close
 	 */
 	public void closeDoor() {
-		this.doorState = 0;
+		this.isDoorOpen = false;
 	}
 	
 }
