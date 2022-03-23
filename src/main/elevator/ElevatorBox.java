@@ -8,10 +8,6 @@ import main.scheduler.ElevatorAgent;
 public class ElevatorBox {
 
 	/**
-	 * ArrayList to keep track of elevator agents
-	 */
-	private ArrayList<ElevatorAgent> agents;
-	/**
 	 * Reference of the Elevator Door
 	 */
 	private ElevatorDoor eDoor;
