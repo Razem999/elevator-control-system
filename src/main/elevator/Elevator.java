@@ -104,7 +104,6 @@ public class Elevator implements Runnable {
 		this.logger = new Logger("ELEV " + elevatorNumber);
 		int port = Constants.ELEVATOR_STARTING_PORT_NUMBER + (elevatorNumber * Constants.NEW_ELEVATOR_INCREMENT);
 
-		System.out.println(port);
 		this.elevatorNumber = elevatorNumber;
 		this.buttons = new ElevatorButton(Constants.NUM_FLOORS);
 		this.door = new ElevatorDoor(elevatorNumber, 0);
