@@ -25,14 +25,14 @@ public class ElevatorBox {
 	public synchronized void passengerEnter() {
 		eDoor.toggleDoorState();
 		try {
-			Thread.sleep(Constants.DOOR_OPEN);
+			Thread.sleep(Constants.DOOR_OPEN_TIME);
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 	    while (error) {
 	        try {
-	            Thread.sleep(Constants.DOOR_OPEN);
+	            Thread.sleep(Constants.DOOR_OPEN_TIME);
 	        } catch (InterruptedException e) {
 	            return;
 	        }
@@ -45,14 +45,14 @@ public class ElevatorBox {
 	public synchronized void passengerExit() {
 		eDoor.toggleDoorState();
 		try {
-			Thread.sleep(Constants.DOOR_OPEN);
+			Thread.sleep(Constants.DOOR_OPEN_TIME);
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 	    while (error) {
 	        try {
-	            Thread.sleep(Constants.DOOR_OPEN);
+	            Thread.sleep(Constants.DOOR_OPEN_TIME);
 	        } catch (InterruptedException e) {}
 	    }
 	    eDoor.toggleDoorState();
