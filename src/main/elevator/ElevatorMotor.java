@@ -12,7 +12,6 @@ public class ElevatorMotor {
 	 * Time it takes to move between a single floor
 	 */
 	private float timeBetweenFloors;
-	private int elevNumber;
 	private Logger logger;
 	
 	/**
@@ -20,24 +19,9 @@ public class ElevatorMotor {
 	 * @param timeBetweenFloors The time it takes to travel between two floors
 	 */
 	public ElevatorMotor(int elevator, float timeBetweenFloors) {
-		this.elevNumber = elevator;
 		this.timeBetweenFloors = timeBetweenFloors;
-		this.logger = new Logger("ELEV " + elevNumber, "Motor");
+		this.logger = new Logger("ELEV " + elevator, "Motor");
 		logger.log("Starting...");
-	}
-	
-	/**
-	 * Moves the elevator up
-	 */
-	public void MoveElevatorUp() {
-		
-	}
-	
-	/**
-	 * Moves the elevator down
-	 */
-	public void MoveElevatorDown() {
-		
 	}
 	
 	/**
@@ -50,6 +34,6 @@ public class ElevatorMotor {
 	}
 	
 	public void log() {
-		System.out.println("Elevator " + this.elevNumber + " motor is not functioning.");
+		logger.log("Motor is not functioning.");
 	}
 }

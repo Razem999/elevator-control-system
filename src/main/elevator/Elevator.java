@@ -102,13 +102,13 @@ public class Elevator implements Runnable {
 	 */
 	public Elevator(int elevatorNumber) {
 		this.logger = new Logger("ELEV " + elevatorNumber);
-		int port = Constants.ELEVATOR_STARTING_PORT_NUMBER + (elevatorNumber * Constants.ELEVATOR_INCREMENT);
+		int port = Constants.ELEVATOR_STARTING_PORT_NUMBER + elevatorNumber;
 
 		this.elevatorNumber = elevatorNumber;
 		this.buttons = new ElevatorButton(Constants.NUM_FLOORS);
 		this.door = new ElevatorDoor(elevatorNumber);
 		this.lamp = new ElevatorLamp();
-		this.motor = new ElevatorMotor(this.getElevatorNumber(), Constants.ELEVATOR_TIME_BETWEEN_FLOORS);
+		this.motor = new ElevatorMotor(elevatorNumber, Constants.ELEVATOR_TIME_BETWEEN_FLOORS);
 		elevatorState = ElevatorState.Idle;
 		this.consecutiveIdles = 0;
 		

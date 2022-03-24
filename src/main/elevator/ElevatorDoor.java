@@ -15,12 +15,14 @@ public class ElevatorDoor {
 	 * Represents the state of the door
 	 */
 	private boolean isDoorOpen;
-	private int elevNumber;
 	private Logger logger;
 	
 
+	/**
+	 * Instantiates a closed Door for the elevator
+	 * @param elevator The door of the elevator
+	 */
 	public ElevatorDoor(int elevator) {
-		this.elevNumber = elevator;
 		this.isDoorOpen = false;
 		this.logger = new Logger("ELEV " + elevator, "Door");
 		logger.log("Starting...");
@@ -41,8 +43,12 @@ public class ElevatorDoor {
 		isDoorOpen = !isDoorOpen;
 	}
 	
+	/**
+	 * Print out a formatted string with the given message to the console.
+	 * @param message Whether the door is closed or open
+	 */
 	public void log(String message) {
-		System.out.println("Elevator " + this.elevNumber + " doors are " + message + " for too long.");
+		logger.log("Doors are " + message + " for too long.");
 	}
 
 }

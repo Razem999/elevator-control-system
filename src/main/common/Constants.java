@@ -15,8 +15,6 @@ public class Constants {
 	public static final int ELEVATOR_STARTING_PORT_NUMBER = 1000;
 	/** The amount of time the elevator door stays open for before closing*/
 	public static final int DOOR_OPEN_TIME = 4000;
-	/** This value is used in conjunction with the Elevator number to assign each Elevator Door a unique port number */
-	public static final int ELEVATOR_DOOR_PORT_NUMBER = 1;
 	/** The amount of time it takes for an Elevator to move floors */
 	public static final int ELEVATOR_TIME_BETWEEN_FLOORS = 2000;
 	/** This value is used in conjunction with the Elevator number to assign each Elevator Agent a unique port number */
