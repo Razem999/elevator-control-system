@@ -72,6 +72,6 @@ public class Instructions extends Input {
 	 * @return prettified string
 	 */
 	public String toString() {
-		return String.format("INS:[%s,%s,%d,%d]", getTime().toString(), direction,  currentFloor, destinationFloor);
+		return String.format("Instructions(%s,%s,%d,%d)", getTime().toString(), direction,  currentFloor, destinationFloor);
 	}
 }

@@ -5,4 +5,6 @@
 14:05:23.4 4 Up 5
 14:05:20.4 4 Down 4
 14:05:23.4 4 Up 2
-14:05:25.0 Type 1
+14:05:25.0 MotorFault 1 0
+14:05:26.0 OpenDoorFault 0 1
+14:05:27.0 CloseDoorFault 1 2

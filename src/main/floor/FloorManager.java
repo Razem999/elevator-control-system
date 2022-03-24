@@ -14,6 +14,7 @@ import static java.time.temporal.ChronoUnit.MILLIS;
 import main.common.Logger;
 import main.common.PacketHandler;
 import main.common.Input.Fault;
+import main.common.Input.FaultType;
 import main.common.Input.Input;
 import main.common.Input.Instructions;
 import main.common.ByteConverter;
@@ -67,7 +68,7 @@ public class FloorManager {
 		
 		getInput(filename);
 	}
-	
+
 	/**
      * Verifies that the input line is valid and returns true if it is, false if it is not 
      * (i.e. current floor = destination, current floor != this floor, direction is wrong) 
@@ -75,11 +76,15 @@ public class FloorManager {
      * @returns boolean
      */
     private boolean verifyInstructions(String[] commands) {
-    	if (commands.length < 4) {
-    		return false;
-    	}
 		// if the current and destination floors are the same
 		if (commands[1].equals(commands[3])) {
+			return false;
+		}
+
+		// check if commands[1] is not an integer
+		try {
+			Integer.parseInt(commands[1]);
+		} catch (NumberFormatException e) {
 			return false;
 		}
 
@@ -101,13 +106,19 @@ public class FloorManager {
 	}
     
     /**
+     * Verifies that the input line is a valid fault.
      * 
-     * @param commands
-     * @return
+     * @param commands String[] - line split by spaces.
+     * @return boolean - True if valid fault, False otherwise.
      */
     private boolean verifyFault(String[] commands) {
-    	// TODO TODO TODO
-    	return commands[1].equals("Type");
+    	// TODO NEEDS MORE CHECKS
+    	try {
+    		FaultType.valueOf(commands[1]);
+    	} catch (IllegalArgumentException e) {
+    		return false;
+    	}
+    	return true;
     }
     
     /**
@@ -125,9 +136,13 @@ public class FloorManager {
 
 			  // check if they are valid instructions or faults
 			  if (verifyInstructions(commands)) {
-				  inputList.add(new Instructions(commands));
+				  Instructions ins = new Instructions(commands);
+				  logger.log("Adding instruction: " + ins);
+				  inputList.add(ins);
 			  } else if (verifyFault(commands)) {
-				  inputList.add(new Fault(commands));
+				  Fault fault = new Fault(commands);
+				  logger.log("Adding fault: " + fault);
+				  inputList.add(fault);
 			  }
 			}
 			logger.log("Added all inputs to input list");
@@ -146,17 +161,6 @@ public class FloorManager {
 	}
 
     /**
-     * Receives instructions from the input manager.
-     */
-    private void receiveInstruction() {
-    	byte[] returned = packetHandler.receive();
-    	// TODO: check here to see if it's valid instruction
-    	Instructions ins = ByteConverter.byteArrayToInstructions(returned);
-    	instructions.add(ins);
-    	logger.log("Received instruction: " + ins);
-    }
-
-    /**
      * Sends an instruction to the scheduler to be handled by an elevator
      * @returns boolean representing whether the instruction was received by the scheduler or not
      */
@@ -167,23 +171,51 @@ public class FloorManager {
     	logger.log("Response: " + new String(returned, StandardCharsets.UTF_8));
     	return returned[0] == (byte) 0;
     }
-    
+
+    /**
+     * Sends a fault to the specified elevator in the fault.
+     * 
+     * @param fault Fault - fault to be sent.
+     */
+    private void sendFault(Fault fault) {
+    	// make a new packet handler to send to a specific elevator
+    	int targetPort = Constants.ELEVATOR_STARTING_PORT_NUMBER + fault.getElevatorId();
+    	PacketHandler elevatorHandler = new PacketHandler(targetPort);
+    	// Set first byte flag based on fault type
+    	byte firstByte = 0;
+    	switch (fault.getType()) {
+	    	case OpenDoorFault:
+	    		firstByte = -2;
+	    		break;
+	    	case CloseDoorFault:
+	    		firstByte = -3;
+	    		break;
+	    	case MotorFault:
+	    	default:
+	    		firstByte = -1;
+	    		break;
+    	}
+    	// send fault to elevator
+    	elevatorHandler.send(new byte[] { firstByte, (byte) fault.getDuration() });
+    }
+
 	/**
 	 * Sends an input to its corresponding destination based on its class.
 	 * 
 	 * @param input Input - input to send. May be Instructions or Fault.
 	 */
 	private void sendInput(Input input) {
+		// determine type of input and go from there
 		if (input instanceof Instructions) {
-			sendInstruction((Instructions) input);
-			logger.log("Sent instructions to floor manager");
+			Instructions ins = (Instructions) input;
+			logger.log("Sending " + ins + " to scheduler.");
+			sendInstruction(ins);
+			logger.log("Sent instructions to scheduler.");
 		} else {
 			Fault fault = (Fault) input;
-			int targetPort = Constants.ELEVATOR_STARTING_PORT_NUMBER + fault.getElevatorId(); // uncomment other line when we change elevator ports
-//			int targetPort = Constants.ELEVATOR_STARTING_PORT_NUMBER + fault.getElevatorId() * 10;
-			PacketHandler elevatorHandler = new PacketHandler(targetPort);
-			elevatorHandler.send(new byte[] { -1 }); // TODO: actual byte format for faults
-			logger.log("Sent fault to elevator");
+			logger.log("Sending " + fault + " to elevator " + fault.getElevatorId());
+			sendFault(fault);
+			logger.log("Sent fault to elevator.");
 		}
 	}
 	
