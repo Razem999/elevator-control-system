@@ -3,8 +3,7 @@
  */
 package main.elevator;
 
-import main.common.Constants;
-import main.common.PacketHandler;
+import main.common.Logger;
 
 /**
  * ElevatorDoor represents the door
@@ -16,19 +15,15 @@ public class ElevatorDoor {
 	 * Represents the state of the door
 	 */
 	private boolean isDoorOpen;
+	private int elevNumber;
+	private Logger logger;
 	
-	/**
-	 * The PacketHandler used by the ElevatorDoor to communicate with the Elevator
-	 */
-	private PacketHandler packetHandler;
-	
-	/**
-	 * Initializing elevator door state to closed
-	 */
-	public ElevatorDoor(int elevatorNumber) {
-		this.isDoorOpen = true;
-		int port = Constants.ELEVATOR_STARTING_PORT_NUMBER + (elevatorNumber * Constants.ELEVATOR_INCREMENT) + Constants.ELEVATOR_DOOR_PORT_NUMBER;
-		
+
+	public ElevatorDoor(int elevator) {
+		this.elevNumber = elevator;
+		this.isDoorOpen = false;
+		this.logger = new Logger("ELEV " + elevator, "Door");
+		logger.log("Starting...");
 	}
 	
 	/**
@@ -46,4 +41,8 @@ public class ElevatorDoor {
 		isDoorOpen = !isDoorOpen;
 	}
 	
+	public void log(String message) {
+		System.out.println("Elevator " + this.elevNumber + " doors are " + message + " for too long.");
+	}
+
 }
