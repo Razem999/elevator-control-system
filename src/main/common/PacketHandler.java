@@ -126,7 +126,7 @@ public class PacketHandler {
 	 * Helper function for receiving DatagramPacket over a DatagramSocket without
 	 * crashing on timeout
 	 * 
-	 * @return returns the received byte array
+	 * @return returns the received byte array, or null if the receive times out
 	 */
 	public byte[] receiveTimeout() {
 		// Construct a DatagramPacket for receiving packets up
@@ -148,5 +148,41 @@ public class PacketHandler {
 		receivedData = trimBuffer(receivedData, receivePacket.getLength());
 
 		return receivedData;
+	}
+	
+	/**
+	 * Helper function for receiving DatagramPacket over a DatagramSocket without
+	 * crashing on timeout
+	 * 
+	 * @return returns the received byte array, or null if the receive times out
+	 */
+	public byte[] receiveTimeout(int timeout) {
+		// Construct a DatagramPacket for receiving packets up
+		byte receivedData[] = new byte[Constants.MAX_BUFFER_SIZE];
+		receivePacket = new DatagramPacket(receivedData, Constants.MAX_BUFFER_SIZE);
+
+		try {
+			sendReceiveSocket.setSoTimeout(timeout);
+			// Block until a datagram is received via sendReceiveSocket.
+			sendReceiveSocket.receive(receivePacket);
+			// sets the port based on who sent us a message
+			sendPort = receivePacket.getPort();
+		} catch (SocketTimeoutException e) {
+			return null;
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		receivedData = trimBuffer(receivedData, receivePacket.getLength());
+
+		return receivedData;
+	}
+
+	/**
+	 * Closes the sendReceiveSocket, this should be the last PacketHandler function called 
+	 */
+	public void shutDown() {
+		sendReceiveSocket.close();
 	}
 }

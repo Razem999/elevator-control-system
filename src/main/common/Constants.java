@@ -17,6 +17,16 @@ public class Constants {
 	public static final int DOOR_OPEN_TIME = 4000;
 	/** The amount of time it takes for an Elevator to move floors */
 	public static final int ELEVATOR_TIME_BETWEEN_FLOORS = 2000;
+	/** The amount of time it takes for an Elevator to move floors */
+	public static final int ELEVATOR_TIME_FOR_DOORS = 500;
+	/** The value found in an Elevator's message that will represent a final destination */
+	public static final int ELEVATOR_FINAL_DESTINATION_VALUE = 1;
+	/** The value found in an Elevator's message that will represent a motor failure */
+	public static final int ELEVATOR_MOTOR_FAIL_VALUE = -1;
+	/** The value found in an Elevator's message that will represent a door stuck open failure*/
+	public static final int ELEVATOR_DOOR_STUCK_OPEN_VALUE = -2;
+	/** The value found in an Elevator's message that will represent a door stuck closed failure*/
+	public static final int ELEVATOR_DOOR_STUCK_CLOSED_VALUE = -3;
 	/** This value is used in conjunction with the Elevator number to assign each Elevator Agent a unique port number */
 	public static final int ELEVATOR_AGENT_STARTING_PORT_NUMBER = 2000;
 	/** The max byte array size that we will support sending over UDP */

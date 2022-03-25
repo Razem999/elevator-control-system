@@ -44,11 +44,25 @@ public class ElevatorDoor {
 	}
 	
 	/**
-	 * Print out a formatted string with the given message to the console.
+	 * Print out a formatted error message to the console
 	 * @param message Whether the door is closed or open
 	 */
-	public void log(String message) {
-		logger.log("Doors are " + message + " for too long.");
+	public void error(String message) {
+		logger.log("ERROR: Doors are " + message + " for too long.");
+	}
+	
+	/**
+	 * Print out a formatted message to the console saying doors are opening
+	 */
+	public void open() {
+		logger.log("Doors are opening.");
+	}
+	
+	/**
+	 * Print out a formatted message to the console saying doors are opening
+	 */
+	public void close() {
+		logger.log("Doors are closing.");
 	}
 
 }
