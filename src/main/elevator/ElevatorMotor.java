@@ -1,5 +1,7 @@
 package main.elevator;
 
+import main.common.Logger;
+
 /**
  * Represents the Motor
  *
@@ -10,27 +12,16 @@ public class ElevatorMotor {
 	 * Time it takes to move between a single floor
 	 */
 	private float timeBetweenFloors;
+	private Logger logger;
 	
 	/**
 	 * Instantiates a Motor with the time it takes to travel between floors
 	 * @param timeBetweenFloors The time it takes to travel between two floors
 	 */
-	public ElevatorMotor(float timeBetweenFloors) {
+	public ElevatorMotor(int elevator, float timeBetweenFloors) {
 		this.timeBetweenFloors = timeBetweenFloors;
-	}
-	
-	/**
-	 * Moves the elevator up
-	 */
-	public void MoveElevatorUp() {
-		
-	}
-	
-	/**
-	 * Moves the elevator down
-	 */
-	public void MoveElevatorDown() {
-		
+		this.logger = new Logger("ELEV " + elevator, "Motor");
+		logger.log("Starting...");
 	}
 	
 	/**
@@ -40,5 +31,9 @@ public class ElevatorMotor {
 	 */
 	public float timeTravelled(int amountOfFloors) {
 		return amountOfFloors * timeBetweenFloors;
+	}
+	
+	public void log() {
+		logger.log("Motor is not functioning.");
 	}
 }
