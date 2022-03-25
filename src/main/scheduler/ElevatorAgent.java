@@ -159,11 +159,13 @@ public class ElevatorAgent implements Runnable {
 	
 	/**
 	 * Helper method to get the elevator's next destination floor.
+	 * Returns a byte array representing { destinationFloor, 1 if last destination and 0 otherwise }
 	 * 
-	 * @param instructions ArrayList<Instructions> - set of current instructions.
+	 * @param instructions ArrayList - set of current instructions.
+	 * @returns byte[] - formatted byte array.
 	 */
-	private int getNextDestinationFloor(ArrayList<Instructions> instructions) {
-		int minDifference = 100, nextFloor = 1;
+	private byte[] getNextDestinationFloor(ArrayList<Instructions> instructions) {
+		int minDifference = 100, nextFloor = 1, lastFloor = 0;
 		// iterate through every instruction that should be served by this elevator
 		for (Instructions ins : instructions) {
 			int difference = 100;
@@ -193,9 +195,14 @@ public class ElevatorAgent implements Runnable {
 			if (difference < minDifference && difference != 0) {
 				minDifference = difference;
 				nextFloor = candidateFloor;
+				// if there is only one instruction left and this is the destination of the request
+				// indicate to the elevator that this is the last floor
+				if (instructions.size() == 1 && nextFloor == ins.getDestinationFloor()) {
+					lastFloor = 1;
+				}
 			}
 		}
-		return nextFloor;
+		return new byte[] { (byte) nextFloor, (byte) lastFloor };
 	}
 
 	/**
@@ -211,7 +218,7 @@ public class ElevatorAgent implements Runnable {
 		int currentDestination = ins.getCurrentFloor();
 
 		// send first instructions to elevator
-		byte[] sent = new byte[] { (byte) currentDestination };
+		byte[] sent = new byte[] { (byte) currentDestination, 0 };
 		logger.log("Sending first instruction: " + Arrays.toString(sent));
 		packetHandler.send(sent);
 
@@ -229,7 +236,7 @@ public class ElevatorAgent implements Runnable {
 				if (getIntermediateRequest(instructions)) {
 					logger.log("intermediate request added: " + instructions.toString());
 					logger.log("Elevator is picking up passengers at floor " + currentFloor);
-					sent = new byte[] { (byte) currentFloor };
+					sent = new byte[] { (byte) currentFloor, 0 };
 					logger.log("Sending: " + Arrays.toString(sent));
 					packetHandler.send(sent);
 					System.out.println();
@@ -265,7 +272,7 @@ public class ElevatorAgent implements Runnable {
 				break;
 			}
 			// send new destination floor
-			sent = new byte[] { (byte) getNextDestinationFloor(instructions) };
+			sent = getNextDestinationFloor(instructions);
 			logger.log("Sending: " + Arrays.toString(sent));
 			packetHandler.send(sent);
 			System.out.println();
