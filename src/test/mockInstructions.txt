@@ -3,3 +3,8 @@
 16:11:23.4 0 Up 5
 16:11:23.4 0 Up 7
 16:11:23.4 2 Up 1
+14:05:25.0 MotorFault 1
+14:05:26.0 OpenDoorFault 0
+14:05:27.0 CloseDoorFault 1
+14:05:27.0 CloseDoorFault 2
+14:05:27.0 ipendpedemement 2

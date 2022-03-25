@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import main.common.Constants;
+import main.common.Input.Fault;
 import main.common.Input.Instructions;
 import main.floor.*;
 import main.scheduler.*;
@@ -31,6 +32,7 @@ public class FloorTest {
 	FloorManager floor;
 	ArrayList<Instructions> instructions = new ArrayList<>();
 	ArrayList<String[]> commandsList = new ArrayList<>();
+	ArrayList<Fault> faults = new ArrayList<>();
 	
 	/**
 	 * Set up Floor object and sample commands and instructions to test
@@ -38,18 +40,29 @@ public class FloorTest {
 	@BeforeEach
 	void setup() {
 		scheduler = new Scheduler(Constants.SCHEDULER_TEST_PORT);
-		floor = new FloorManager(6);
+		floor = new FloorManager(6, "src/test/mockInstructions.txt");
 		
 		// get instructions array
-		floor.getGetInput("src/test/mockInstructions.txt");
 		File input = new File("src/test/mockInstructions.txt"); 
 		try {		
 			Scanner inputReader = new Scanner(input);
 			while (inputReader.hasNextLine()) {
 			  String line = inputReader.nextLine();
 			  String[] commands = line.split(" ");
+			  
 			  commandsList.add(commands);
-			  instructions.add(new Instructions(commands));
+			  
+			  try {
+				  instructions.add(new Instructions(commands));
+			  }
+			  catch (ArrayIndexOutOfBoundsException e) {
+				  try {
+					  faults.add(new Fault(commands));
+				  }
+				  catch (IllegalArgumentException e1) {
+					  continue;
+				  }
+			  }
 			}
 			inputReader.close();
 		} catch (FileNotFoundException e) {
@@ -65,30 +78,36 @@ public class FloorTest {
 	}
 
 	/**
-	 * Testing the list of commands to see if they are valid
+	 * Testing the method that verifies if an instruction is valid
 	 */
 	@Test
-	void testVerify() {
-		for (int i = 0; i < instructions.size(); i++) {
-			System.out.println(instructions.get(i).toString());
-			System.out.flush();
-		}
-		
-		assertTrue(floor.getVerifyInput(commandsList.get(0)));
-		assertFalse(floor.getVerifyInput(commandsList.get(1)));
-		assertFalse(floor.getVerifyInput(commandsList.get(2)));
-		assertFalse(floor.getVerifyInput(commandsList.get(3)));
-		assertFalse(floor.getVerifyInput(commandsList.get(4)));
-		
+	void testVerifyInput() {
+		assertTrue(floor.getVerifyInstructions(commandsList.get(0)));
+		assertFalse(floor.getVerifyInstructions(commandsList.get(1)));
+		assertFalse(floor.getVerifyInstructions(commandsList.get(2)));
+		assertFalse(floor.getVerifyInstructions(commandsList.get(3)));
+		assertFalse(floor.getVerifyInstructions(commandsList.get(4)));
 	}
 	
+	/**
+	 * Testing the method that verifies if a fault is valid
+	 */
+	@Test
+	void testVerifyFault() {
+		System.out.println(commandsList);
+		assertTrue(floor.getVerifyFault(commandsList.get(5)));
+		assertTrue(floor.getVerifyFault(commandsList.get(6)));
+		assertTrue(floor.getVerifyFault(commandsList.get(7)));
+		assertFalse(floor.getVerifyFault(commandsList.get(8)));
+		assertFalse(floor.getVerifyFault(commandsList.get(9)));
+	}
 	
 	/**
 	 * Testing to see if it is able to read input from a mock instructions file
 	 */
 	@Test
 	void getInputFromFile() {
-		assertTrue(floor.getInstructions().get(0).getDestinationFloor() == instructions.get(0).getDestinationFloor());
+		assertTrue(((Instructions) (floor.getInputList().get(0))).getDestinationFloor() == instructions.get(0).getDestinationFloor());
 	}
 
 }

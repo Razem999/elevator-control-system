@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import static java.time.temporal.ChronoUnit.MILLIS;
@@ -34,10 +35,6 @@ public class FloorManager {
 	private FloorButton[] floorButtons;
 	/** Array of all floorLamps */
 	private FloorLamp[] floorLamps;
-	/** Instructions sent from this Floor to the Scheduler */
-	private ArrayList<Instructions> instructions;
-	/** Tracks time spent without processing instructions */
-	private int timeWithoutRequests = 0;
 	/** PacketHandler for dealing with UDP communication */
 	private PacketHandler packetHandler;
 	/** list of inputs to process */
@@ -51,7 +48,6 @@ public class FloorManager {
 	public FloorManager(int numFloors, String filename) {
 		inputList = new ArrayList<>();
 		this.button = new FloorButton();
-		this.instructions = new ArrayList<>();
 		this.packetHandler = new PacketHandler(Constants.SCHEDULER_PORT, Constants.FLOOR_MANAGER_PORT);
 
 		// Fill in the array with floors from 1 to numFloors
@@ -68,7 +64,15 @@ public class FloorManager {
 		
 		getInput(filename);
 	}
-
+	
+	public boolean getVerifyInstructions(String[] commands) {
+		return verifyInstructions(commands);
+	}
+	
+	public boolean getVerifyFault(String[] commands) {
+		return verifyFault(commands);
+	}
+	
 	/**
      * Verifies that the input line is valid and returns true if it is, false if it is not 
      * (i.e. current floor = destination, current floor != this floor, direction is wrong) 
@@ -76,33 +80,49 @@ public class FloorManager {
      * @returns boolean
      */
     private boolean verifyInstructions(String[] commands) {
+    	// verify the length of the commands array
+    	if (commands.length != 4) {
+    		return false;
+    	}
+    	
 		// if the current and destination floors are the same
 		if (commands[1].equals(commands[3])) {
 			return false;
 		}
-
+		
+		// ensure the time is properly formatted
+		try {
+    		LocalTime.parse(commands[0]);
+    	} catch (DateTimeParseException e) {
+    		return false;
+    	}
+		
+		int startFloor, endFloor;
+		
 		// check if commands[1] is not an integer
 		try {
-			Integer.parseInt(commands[1]);
+			startFloor = Integer.parseInt(commands[1]);
+			endFloor = Integer.valueOf(commands[3]);
+			
+			// make sure floors in the instruction are within legal bounds
+			if (startFloor < 1 || startFloor > Constants.NUM_FLOORS) {
+				return false;
+			}
+
+			if (endFloor < 1 || endFloor > Constants.NUM_FLOORS) {
+				return false;
+			}
+
+			// if the previous checks passed, we just need to verify that the direction is correct
+			if (startFloor < endFloor) {
+				return commands[2].equals("Up");
+			}
+			
+			return commands[2].equals("Down");
+			
 		} catch (NumberFormatException e) {
 			return false;
 		}
-
-		// make sure floors in the instruction are within legal bounds
-		if (Integer.valueOf(commands[1]) < 1 || Integer.valueOf(commands[1]) > Constants.NUM_FLOORS) {
-			return false;
-		}
-
-		if (Integer.valueOf(commands[3]) < 1 || Integer.valueOf(commands[3]) > Constants.NUM_FLOORS) {
-			return false;
-		}
-
-		// if the previous checks passed, we just need to verify that the direction is correct
-		if (Integer.valueOf(commands[1]) < Integer.valueOf(commands[3])) {
-			return commands[2].equals("Up");
-		}
-
-		return commands[2].equals("Down");
 	}
     
     /**
@@ -111,13 +131,38 @@ public class FloorManager {
      * @param commands String[] - line split by spaces.
      * @return boolean - True if valid fault, False otherwise.
      */
-    private boolean verifyFault(String[] commands) {
-    	// TODO NEEDS MORE CHECKS
-    	try {
-    		FaultType.valueOf(commands[1]);
-    	} catch (IllegalArgumentException e) {
+    private boolean verifyFault(String[] commands) {  	
+    	// verify the length of the commands array
+    	if (commands.length != 3) {
     		return false;
     	}
+    	
+    	// ensure the time is properly formatted
+    	try {
+    		LocalTime.parse(commands[0]);
+    	} catch (DateTimeParseException e) {
+    		return false;
+    	}
+    	
+    	int elevatorNum;
+    	
+    	try {
+    		FaultType.valueOf(commands[1]);
+    		elevatorNum = Integer.parseInt(commands[2]);
+    		
+    		// ensure that the elevator the fault affects exists 
+    		// (i.e. is within the number of elevators instantiated)
+    		if (elevatorNum >= Constants.NUM_CARS || elevatorNum < 0) {
+    			return false;
+    		}
+    	} 
+    	catch (NumberFormatException e) {
+    		return false;
+    	}
+    	catch (IllegalArgumentException e) {
+    		return false;
+    	}
+    	
     	return true;
     }
     
@@ -156,8 +201,8 @@ public class FloorManager {
 	 * Returns the instructions associated with this floor
 	 * @return arrayList - array of instructions 
 	 */
-	public ArrayList<Instructions> getInstructions() {
-		return instructions;
+	public ArrayList<Input> getInputList() {
+		return inputList;
 	}
 
     /**
@@ -196,7 +241,7 @@ public class FloorManager {
 	    		break;
     	}
     	// send fault to elevator
-    	elevatorHandler.send(new byte[] { firstByte, (byte) fault.getDuration() });
+    	elevatorHandler.send(new byte[] { firstByte });
     }
 
 	/**

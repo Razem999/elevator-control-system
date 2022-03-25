@@ -13,8 +13,6 @@ public class Fault extends Input {
 	private FaultType type;
 	/** Indicates the associated elevator id */
 	private int elevatorId; // do we only send faults to elevators?
-	/** Indicates the duration of the error (in seconds), if applicable */
-	private int duration;
 	
 	/**
 	 * Initializing Fault structure for all instance variables.
@@ -24,11 +22,10 @@ public class Fault extends Input {
 	 * @param elevatorId int - associated elevator id.
 	 * @param duration int - duration of the error (in seconds).
 	 */
-	public Fault(String time, FaultType type , int elevatorId, int duration) {	
+	public Fault(String time, FaultType type , int elevatorId) {	
 		setTime(LocalTime.parse(time));
 		this.type = type;
 		this.elevatorId = elevatorId;
-		this.duration = duration;
 	}
 	
 	/**
@@ -37,7 +34,7 @@ public class Fault extends Input {
 	 * @param args String[] - contains time, fault type, elevatorId, and duration.
 	 */
 	public Fault(String[] args) {
-		this(args[0], FaultType.valueOf(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]));
+		this(args[0], FaultType.valueOf(args[1]), Integer.parseInt(args[2]));
 	}
 	
 	/**
@@ -53,13 +50,6 @@ public class Fault extends Input {
 	 * @return int - elevator id.
 	 */
 	public int getElevatorId() { return elevatorId; }
-
-	/**
-	 * Getter for the duration.
-	 * 
-	 * @return int - duration of fault (in seconds).
-	 */
-	public int getDuration() { return duration; }
 	
 	/**
 	 * Returns a string representation of fault's contents.
@@ -67,6 +57,6 @@ public class Fault extends Input {
 	 * @return String - string output.
 	 */
 	public String toString() {
-		return String.format("Fault(%s,%s,%d,%d)", getTime().toString(), type.toString(), elevatorId, duration);
+		return String.format("Fault(%s,%s,%d)", getTime().toString(), type.toString(), elevatorId);
 	}
 }
