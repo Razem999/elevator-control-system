@@ -217,6 +217,26 @@ public class Scheduler {
 				elevatorRequests.get(bestAgent.getId()).add(instruction);
 				logger.log("Sent Instruction to Elevator " + bestAgent.getId());
 				logger.log("Current state: " + currState + "\nRequests: " + this);
+			} else if (response[0] == (byte)-1 ) { // Received failure request from agent
+				ElevatorAgent removeAgent = null;
+				int id = -1;
+				// Pick agent to remove
+				for (ElevatorAgent agent: agents) {
+					if ((byte) agent.getId() == response[1]) {
+						removeAgent = agent;
+						id = removeAgent.getId();
+						break;
+					}
+				}
+				if (removeAgent == null) continue;
+				
+				// Remove agent from possible elevators to delegate
+				agents.remove(removeAgent);
+				packetHandler.setReceiverPort(Constants.ELEVATOR_AGENT_STARTING_PORT_NUMBER + id);
+				// Send acknowledgement
+				packetHandler.send(new byte[] { 0 });
+				packetHandler.setReceiverPort(FLOOR_MANAGER_PORT);
+				
 			}
 		}
 	}

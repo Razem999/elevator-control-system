@@ -154,6 +154,7 @@ public class PacketHandler {
 	 * Helper function for receiving DatagramPacket over a DatagramSocket without
 	 * crashing on timeout
 	 * 
+	 * @param timeout time in milliseconds it takes to timeout
 	 * @return returns the received byte array, or null if the receive times out
 	 */
 	public byte[] receiveTimeout(int timeout) {

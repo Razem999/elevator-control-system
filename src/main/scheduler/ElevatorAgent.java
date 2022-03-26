@@ -3,6 +3,7 @@
  */
 package main.scheduler;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -219,13 +220,25 @@ public class ElevatorAgent implements Runnable {
 
 		// send first instructions to elevator
 		byte[] sent = new byte[] { (byte) currentDestination, 0 };
+		byte[] elevFailure = new byte[] { (byte) -1, (byte) elevatorId };
 		logger.log("Sending first instruction: " + Arrays.toString(sent));
 		packetHandler.send(sent);
 
 		// while elevator is moving
 		while (currentState == ElevatorState.Moving) {
 			// receive status updates from elevator
-			byte[] received = packetHandler.receive();
+			byte[] received = packetHandler.receiveTimeout(10000);
+			
+			// Elevator is deemed dead if no response within given time
+			if (received == null) {
+				logger.log(elevatorId + " is now considered dead");
+				packetHandler.setReceiverPort(Constants.SCHEDULER_PORT);
+				packetHandler.send(elevFailure);
+				packetHandler.setReceiverPort(Constants.ELEVATOR_STARTING_PORT_NUMBER + elevatorId);
+				received = packetHandler.receive();
+				if (received[0] == (byte) 0) System.exit(-1);
+			}
+			
 			logger.log("Received: " + Arrays.toString(received));
 			currentFloor = received[1];
 			Direction direction = received[2] == 0 ? Direction.STOP : received[2] == 1 ? Direction.UP : Direction.DOWN;
