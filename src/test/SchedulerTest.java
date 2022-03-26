@@ -75,9 +75,6 @@ public class SchedulerTest {
 					  continue;
 				  }
 			  }
-			  
-			  
-			  
 			}
 			inputReader.close();
 		} catch (FileNotFoundException e) {
