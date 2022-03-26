@@ -50,6 +50,12 @@ public class ElevatorLamp {
 	 */
 	public void setLightDown() {
 		direction = Direction.DOWN;
-		
+	}
+	
+	/**
+	 * Sets direction to none
+	 */
+	public void setLightOff() {
+		direction = Direction.STOP;
 	}
 }
