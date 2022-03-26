@@ -40,16 +40,10 @@ public class Constants {
 	public static final int ELEVATOR_DOOR_STUCK_CLOSED_VALUE = -3;
 	/** This value is used in conjunction with the Elevator number to assign each Elevator Agent a unique port number */
 	public static final int ELEVATOR_AGENT_STARTING_PORT_NUMBER = 2000;
-	/** The max byte array size that we will support sending over UDP */
-	public static final int MAX_BUFFER_SIZE = 100;
-	/** The time a UDP Listener will wait before timing out */
-	public static final int TIMEOUT = 20000;
 	/** the port number for the floor facing scheduler */
 	public static final int SCHEDULER_PORT = 24;
 	/** the port number for the floor facing scheduler in unit tests */
 	public static final int SCHEDULER_TEST_PORT = 23;
-	/** This value is used in conjunction with the Elevator number to assign each Elevator Agent a unique port number */
-	public static final int ELEVATOR_AGENT_STARTING_PORT_NUMBER = 2000;
 	
 	// Floor
 	

@@ -65,10 +65,16 @@ public class FloorManager {
 		getInput(filename);
 	}
 	
+	/** 
+	 * "Getter" to call verifyInstructions outside of this class, used for unit tests
+	 */
 	public boolean getVerifyInstructions(String[] commands) {
 		return verifyInstructions(commands);
 	}
 	
+	/** 
+	 * "Getter" to call verifyFault outside of this class, used for unit tests
+	 */
 	public boolean getVerifyFault(String[] commands) {
 		return verifyFault(commands);
 	}
@@ -156,9 +162,6 @@ public class FloorManager {
     			return false;
     		}
     	} 
-    	catch (NumberFormatException e) {
-    		return false;
-    	}
     	catch (IllegalArgumentException e) {
     		return false;
     	}
