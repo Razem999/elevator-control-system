@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import main.common.Instructions;
 import main.common.Logger;
 import main.common.PacketHandler;
+import main.common.Input.Instructions;
 import main.elevator.Elevator.ElevatorState;
 import main.common.Direction;
 import main.common.Constants;

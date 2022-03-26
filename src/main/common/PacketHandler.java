@@ -12,7 +12,18 @@ public class PacketHandler {
 	/** socket to be used for UDP */
 	private DatagramSocket sendReceiveSocket;
 	/** the port of the entity that we will communicate with */
-	private int sendPort; 
+	private int sendPort;
+	
+	public PacketHandler(int sendPort) {
+		this.sendPort = sendPort;
+		try {
+			sendReceiveSocket = new DatagramSocket();
+			sendReceiveSocket.setSoTimeout(Constants.TIMEOUT);
+		} catch (SocketException se) {
+			se.printStackTrace();
+			System.exit(1);
+		}
+	}
 
 	public PacketHandler(int sendPort, int receivePort) {
 		this.sendPort = sendPort;

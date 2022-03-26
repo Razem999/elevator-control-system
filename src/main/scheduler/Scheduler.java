@@ -8,9 +8,9 @@ import java.util.List;
 import main.common.ByteConverter;
 import main.common.Constants;
 import main.common.Direction;
-import main.common.Instructions;
 import main.common.Logger;
 import main.common.PacketHandler;
+import main.common.Input.Instructions;
 import main.elevator.Elevator.ElevatorState;
 import main.elevator.ElevatorButton;
 import main.floor.FloorButton;
@@ -128,7 +128,7 @@ public class Scheduler {
 		int difference = currentFloor - startingFloor;
 		
 		switch (currentState) {
-			// Priority from best to worst:
+			// Priorities from best to worst:
 			// 1. Idle elevators within a a distance of NUM_FLOORS/4
 			// 2. Elevators that can serve the request as an intermediate request
 			// 3. Idle elevators that are farther away
@@ -162,7 +162,7 @@ public class Scheduler {
 				// Elevator is moving down
 				// if starting floor cannot be reached without changing direction
 				if (difference > 0) {
-					return 1; // TODO bad score
+					return 1;
 				// if starting floor can be reached and heading in same direction
 				} else if (currentDirection == destinationDirection) {
 					return 3;
@@ -172,7 +172,7 @@ public class Scheduler {
 			
 			// any elevator outside of the above cases is given a score of 2
 			default:
-				return 2; 
+				return 2;
 		}
 	}
 
