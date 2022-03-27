@@ -12,35 +12,18 @@ import main.common.Logger;
 public class ElevatorDoor {
 	
 	/**
-	 * Represents the state of the door
+	 * Used to communicate with the console
 	 */
-	private boolean isDoorOpen;
 	private Logger logger;
 	
 
 	/**
-	 * Instantiates a closed Door for the elevator
+	 * Instantiates the Door's logger
 	 * @param elevator The door of the elevator
 	 */
 	public ElevatorDoor(int elevator) {
-		this.isDoorOpen = false;
 		this.logger = new Logger("ELEV " + elevator, "Door");
 		logger.log("Starting...");
-	}
-	
-	/**
-	 * Gives information on the door opening or not
-	 * @return The door state
-	 */
-	public boolean getIsDoorOpen() {
-		return isDoorOpen;
-	}
-	
-	/**
-	 * Toggles between door states
-	 */
-	public void toggleDoorState() {
-		isDoorOpen = !isDoorOpen;
 	}
 	
 	/**

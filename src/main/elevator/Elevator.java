@@ -3,6 +3,8 @@
  */
 package main.elevator;
 
+import java.util.Arrays;
+
 import main.common.Constants;
 import main.common.Logger;
 import main.common.PacketHandler;
@@ -71,6 +73,10 @@ public class Elevator implements Runnable {
 	 */
 	private boolean willDoorsBeStuckClosed;
 	/**
+	 * Boolean used to shut down a thread
+	 */
+	private boolean isRunning;
+	/**
 	 * Elevator state machine definition
 	 */
 	public enum ElevatorState {
@@ -123,6 +129,7 @@ public class Elevator implements Runnable {
 		this.door = new ElevatorDoor(elevatorNumber);
 		this.lamp = new ElevatorLamp();
 		this.motor = new ElevatorMotor(elevatorNumber);
+		this.isRunning = true;
 		elevatorState = ElevatorState.Idle;
 
 		this.consecutiveIdles = 0;
@@ -156,32 +163,43 @@ public class Elevator implements Runnable {
 	public ElevatorState getState() {
 		return elevatorState;
 	}
-
+	
 	public void setState(ElevatorState state) {
 		elevatorState = state;
 	}
 	
-	/**
-	 * A quick helper that determines if a message received by the Elevator contains a new destination or an error
-	 * @param message The first byte of the message received.
-	 * @return Whether the message is a destination or an error
-	 */
-	private boolean isDestination(byte message) {
-		return message >= 0;
+	public boolean getProcessMessage(byte[] message) {
+		return processMessage(message);
+	}
+	
+	public boolean getwillDoorsBeStuckClosed() {
+		return willDoorsBeStuckClosed;
+	}
+	
+	public boolean getwillDoorsBeStuckOpen() {
+		return willDoorsBeStuckOpen;
+	}
+	
+	public boolean getwillMotorFail() {
+		return willMotorFail;
+	}
+	
+	public boolean isFinalDestination() {
+		return isFinalDestination;
 	}
 	
 	/**
 	 * Interprets the message received by the Elevator and updates the destination floor and errors accordingly.
-	 * @param message The message recieved by the Elevator
+	 * @param message The message received by the Elevator
 	 * @param logDestination Whether the new destination should be logged or not
 	 * @return Whether a message was received or not
 	 */
-	private boolean processMessage(byte[] message, boolean logDestination) {
+	private boolean processMessage(byte[] message) {
 		if (message == null) return false;
-		if (isDestination(message[0])) { // we're provided a destination
+		if (message[0] >= 0) { // we're provided a destination
 			destinationFloor = (int) message[0];
 			isFinalDestination = message[1] == Constants.ELEVATOR_FINAL_DESTINATION_VALUE;
-			if (logDestination) logger.log("Received instructions from scheduler, new destination floor " + destinationFloor);
+			logger.log("Received instructions from scheduler, new destination floor " + destinationFloor);
 		}
 		else {
 			String error = "";
@@ -213,7 +231,7 @@ public class Elevator implements Runnable {
 			door.open();
 			willDoorsBeStuckClosed = false;
 			response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIME_FOR_DOORS);
-			processMessage(response, true);
+			processMessage(response);
 			count--;
 			if (willDoorsBeStuckClosed) {
 				count += 1;
@@ -226,7 +244,7 @@ public class Elevator implements Runnable {
 			door.close();
 			willDoorsBeStuckOpen = false;
 			response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIME_FOR_DOORS);
-			processMessage(response, true);
+			processMessage(response);
 			count--;
 			if (willDoorsBeStuckOpen) {
 				count += 1;
@@ -240,7 +258,7 @@ public class Elevator implements Runnable {
 	 */
 	private void shutDown() {
 		packetHandler.shutDown();
-		System.exit(1);
+		isRunning = false;
 	}
 
 	/**
@@ -248,7 +266,7 @@ public class Elevator implements Runnable {
 	 * completes the instructions
 	 */
 	public void run() {
-		while (true) {
+		while (isRunning) {
 			logger.log("Current state: " + elevatorState);
 			byte direction = (byte) ((currentFloor == destinationFloor) ? 0
 					: (currentFloor > destinationFloor ? -1 : 1));
@@ -256,15 +274,17 @@ public class Elevator implements Runnable {
 
 			switch (elevatorState) {
 				case Idle:
+					logger.log("Updating my agent");
+					packetHandler.send(status);
 					logger.log("Awaiting instructions from scheduler...");	
-					response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIME_BETWEEN_FLOORS);
+					response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIMEOUT);
 					
 					// If we don't receive a message, just stay in idle state
-					if (!processMessage(response, true)) {
+					if (!processMessage(response)) {
 						consecutiveIdles++;
 						if (consecutiveIdles == Constants.IDLE_EXIT_COUNT) {
 							logger.log("Elevator idle for too long...Exiting");
-							System.exit(1);
+							shutDown();
 						}
 						elevatorState = ElevatorState.Idle;
 						break;
@@ -277,45 +297,49 @@ public class Elevator implements Runnable {
 						}
 						
 						openCloseDoors();
-						packetHandler.send(status);
 					}
-					System.out.println();
-					
 					break;
 
 				case Moving:
-					logger.log("Moving from floor " + currentFloor + " to destination floor " + destinationFloor);
+					String finalDest = isFinalDestination ? "final " : "";
+					logger.log("Moving from floor " + currentFloor + " to " + finalDest + "destination floor " + destinationFloor);
 					motor.run();
 					if (willMotorFail) {
 						motor.error();
 						shutDown();
-					}
-					packetHandler.send(status);
-					
-					if (destinationFloor == currentFloor) {
-						logger.log("Arriving at destination floor " + destinationFloor);
-						elevatorState = ElevatorState.Arriving;
 						break;
 					}
-
+					
+					packetHandler.send(status);
+					
 					response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIME_BETWEEN_FLOORS);
-					if (processMessage(response, true)) {
+					if (processMessage(response)) {
 						response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIME_BETWEEN_FLOORS);
-						processMessage(response, true);
+						processMessage(response);
 						
 						// line below might not even be needed
 						direction = (byte) ((currentFloor == destinationFloor) ? 0
 								: (currentFloor > destinationFloor ? -1 : 1));
 					}
+					if (destinationFloor == currentFloor) {
+						logger.log("Arriving at destination floor " + destinationFloor);
+						elevatorState = ElevatorState.Arriving;
+						break;
+					}
 					
 					currentFloor += direction;
-					System.out.println();
 					break;
 				case Arriving:
 					logger.log("I'm arriving to my destination floor " + destinationFloor);
 					openCloseDoors();
 					
-					elevatorState = isFinalDestination ? ElevatorState.Idle : ElevatorState.Moving;
+					if (isFinalDestination) {
+						packetHandler.send(status);
+						elevatorState = ElevatorState.Idle;
+					} else {
+						elevatorState = ElevatorState.Moving;
+					}
+
 					break;
 			}
 		}

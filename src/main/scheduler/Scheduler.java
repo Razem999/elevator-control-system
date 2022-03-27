@@ -92,7 +92,11 @@ public class Scheduler {
 	 * @return string
 	 */
 	public String toString() {
-		return elevatorRequests.toString();
+		String output = "";
+		for (int i = 0; i < elevatorRequests.size(); i++) {
+			output += "Agent-" + i + ": " + elevatorRequests.get(i) + "\n";
+		}
+		return output;
 	}
 
 	/**
@@ -107,7 +111,7 @@ public class Scheduler {
 		int bestScore = 0;
 		for (ElevatorAgent agent : agents) {
 			int score = getFloorDifference(agent.getCurrentFloor(), startingFloor, agent.getCurrentDirection(), direction, agent.getCurrentState());
-			if (score >= bestScore) {
+			if (score > bestScore) {
 				bestScore = score;
 				bestAgent = agent;
 			}
@@ -195,8 +199,11 @@ public class Scheduler {
 		while (true) {
 			// move scheduler to listening state
 			currState = SchedulerStates.LISTENING;
-			logger.log("Current state: " + currState + "\nRequests: " + this);
-			response = packetHandler.receive(); // TODO not really a response
+			logger.log("Current state: " + currState);
+			response = packetHandler.receiveTimeout(Constants.SCHEDULER_TIMEOUT); // TODO not really a response xd
+			if (response == null) {
+				continue;
+			}
 			stringResponse = new String(response, StandardCharsets.UTF_8).substring(0, 2);
 
 			// check if input received is a valid instruction
@@ -216,7 +223,7 @@ public class Scheduler {
 				// and add the instructions to their requests queue
 				elevatorRequests.get(bestAgent.getId()).add(instruction);
 				logger.log("Sent Instruction to Elevator " + bestAgent.getId());
-				logger.log("Current state: " + currState + "\nRequests: " + this);
+				logger.log("Requests:\n" + this);
 			} else if (response[0] == (byte)-1 ) { // Received failure request from agent
 				ElevatorAgent removeAgent = null;
 				int id = -1;
@@ -227,16 +234,21 @@ public class Scheduler {
 						id = removeAgent.getId();
 						break;
 					}
+					
 				}
 				if (removeAgent == null) continue;
 				
 				// Remove agent from possible elevators to delegate
 				agents.remove(removeAgent);
-				packetHandler.setReceiverPort(Constants.ELEVATOR_AGENT_STARTING_PORT_NUMBER + id);
-				// Send acknowledgement
-				packetHandler.send(new byte[] { 0 });
-				packetHandler.setReceiverPort(FLOOR_MANAGER_PORT);
 				
+				if (agents.isEmpty()) {
+					logger.log("No more agents available. Shutting down...");
+					break;
+				}
+				
+				// we remove all instructions that were to be served by this elevator if its motor breaks down
+				elevatorRequests.get(id).clear();
+				logger.log("Requests:\n" + this);
 			}
 		}
 	}

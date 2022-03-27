@@ -5,6 +5,7 @@ import java.util.Arrays;
 import main.common.Input.Instructions;
 
 public class ByteConverter {
+	
 	public static byte[] instructionToByteArray(Instructions instruction) {		
 		byte[] directionBytes = instruction.getDirection().toString().getBytes();
 		byte[] startBytes = String.valueOf(instruction.getCurrentFloor()).getBytes();

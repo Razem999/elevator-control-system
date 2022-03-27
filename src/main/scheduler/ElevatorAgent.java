@@ -28,6 +28,10 @@ public class ElevatorAgent implements Runnable {
 	 */
 	private Direction currentDirection;
 	/**
+	 * Keeps track of the associated Elevator's previous direction.
+	 */
+	private Direction previousDirection;
+	/**
 	 * Keeps track of the associated Elevator's current floor.
 	 */
 	private int currentFloor;
@@ -47,6 +51,14 @@ public class ElevatorAgent implements Runnable {
 	 * Logger instance to log messages.
 	 */
 	private final Logger logger;
+	/**
+	 * Boolean used to shut down elevator agent thread
+	 */
+	private boolean isRunning;
+	/**
+	 * Boolean representing whether this is the first pickup for the elevator
+	 */
+	private boolean firstPickup;
 	
 	/**
 	 * Default constructor to initialize an elevator agent with a specific elevator id.
@@ -61,6 +73,7 @@ public class ElevatorAgent implements Runnable {
 		this.currentFloor = currentFloor;
 		this.elevatorId = elevatorId;
 		this.requests = requests;
+		this.isRunning = true;
 		this.packetHandler = new PacketHandler(Constants.ELEVATOR_STARTING_PORT_NUMBER + elevatorId, Constants.ELEVATOR_AGENT_STARTING_PORT_NUMBER + elevatorId);
 		this.logger = new Logger("ELEV-AGENT-" + elevatorId);
 	}
@@ -167,13 +180,22 @@ public class ElevatorAgent implements Runnable {
 	 */
 	private byte[] getNextDestinationFloor(ArrayList<Instructions> instructions) {
 		int minDifference = 100, nextFloor = 1, lastFloor = 0;
+		Direction direction = currentDirection;
+		// if direction is stop, set direction to the previous direction
+		if (currentDirection == Direction.STOP) {
+			direction = previousDirection;
+			// if this is the first pickup, we should go in direction of destination
+			if (firstPickup) {
+				direction = instructions.get(0).getDirection();
+				firstPickup = false;
+			}
+		}
 		// iterate through every instruction that should be served by this elevator
 		for (Instructions ins : instructions) {
-			int difference = 100;
 			// candidate floor represents the floor that we will potentially go to next, initialize it to 0 if we are going down, the top floor
 			// if we are going up, since we are trying to find the minimum distance to travel in the same direction we are already headed
-			int candidateFloor = currentDirection == Direction.UP ? Constants.NUM_FLOORS - 1 : 0;
-			if (currentDirection == Direction.UP) {
+			int candidateFloor;
+			if (direction == Direction.UP) {;
 				// if the instructions pickup floor is greater than the elevator's current floor, we need to pick people up
 				if (ins.getCurrentFloor() > currentFloor) {
 					candidateFloor = ins.getCurrentFloor();
@@ -192,18 +214,23 @@ public class ElevatorAgent implements Runnable {
 			
 			// we compare the candidateFloor to the current minimum distance destination, and replace it if
 			// candidate is more favorable
-			difference = Math.abs(candidateFloor - currentFloor);
+			int difference = Math.abs(candidateFloor - currentFloor);
 			if (difference < minDifference && difference != 0) {
 				minDifference = difference;
 				nextFloor = candidateFloor;
 				// if there is only one instruction left and this is the destination of the request
 				// indicate to the elevator that this is the last floor
-				if (instructions.size() == 1 && nextFloor == ins.getDestinationFloor()) {
-					lastFloor = 1;
+				lastFloor = 0;
+				for (Instructions ins2 : instructions) {
+					if (nextFloor == ins2.getDestinationFloor()) {
+						lastFloor += 1;
+					} else {
+						break;
+					}
 				}
 			}
 		}
-		return new byte[] { (byte) nextFloor, (byte) lastFloor };
+		return new byte[] { (byte) nextFloor, (byte) (lastFloor == instructions.size() ? 1 : 0) };
 	}
 
 	/**
@@ -221,28 +248,28 @@ public class ElevatorAgent implements Runnable {
 		// send first instructions to elevator
 		byte[] sent = new byte[] { (byte) currentDestination, 0 };
 		byte[] elevFailure = new byte[] { (byte) -1, (byte) elevatorId };
+		firstPickup = true;
 		logger.log("Sending first instruction: " + Arrays.toString(sent));
 		packetHandler.send(sent);
 
 		// while elevator is moving
 		while (currentState == ElevatorState.Moving) {
 			// receive status updates from elevator
-			byte[] received = packetHandler.receiveTimeout(10000);
+			byte[] received = packetHandler.receiveTimeout(Constants.ELEVATOR_AGENT_TIMEOUT);
 			
 			// Elevator is deemed dead if no response within given time
 			if (received == null) {
 				logger.log(elevatorId + " is now considered dead");
 				packetHandler.setReceiverPort(Constants.SCHEDULER_PORT);
 				packetHandler.send(elevFailure);
-				packetHandler.setReceiverPort(Constants.ELEVATOR_STARTING_PORT_NUMBER + elevatorId);
-				received = packetHandler.receive();
-				if (received[0] == (byte) 0) System.exit(-1);
+				isRunning = false;
+				break;
 			}
 			
 			logger.log("Received: " + Arrays.toString(received));
 			currentFloor = received[1];
-			Direction direction = received[2] == 0 ? Direction.STOP : received[2] == 1 ? Direction.UP : Direction.DOWN;
-			logger.log("Elevator is at floor " + currentFloor + ", heading " + direction);
+			currentDirection = received[2] == 0 ? Direction.STOP : received[2] == 1 ? Direction.UP : Direction.DOWN;
+			logger.log("Elevator is at floor " + currentFloor + ", heading " + currentDirection);
 			// check if intermediate requests can be dealt with here
 			if (!requests.isEmpty()) {
 				logger.log("Checking for intermediate requests...");
@@ -252,12 +279,11 @@ public class ElevatorAgent implements Runnable {
 					sent = new byte[] { (byte) currentFloor, 0 };
 					logger.log("Sending: " + Arrays.toString(sent));
 					packetHandler.send(sent);
-					System.out.println();
 					continue;
 				}
 			}
 			// check if elevator has stopped and reached a destination floor
-			if (direction == Direction.STOP) {
+			if (currentDirection == Direction.STOP && !firstPickup) {
 				logger.log("Elevator stopped moving!");
 				ArrayList<Integer> removedIndices = new ArrayList<>();
 				logger.log("Currently servicing requests: " + instructions.toString());
@@ -272,7 +298,7 @@ public class ElevatorAgent implements Runnable {
 						removedIndices.add(i);
 					}
 				}
-//				logger.log("To be removed: " + removedIndices.toString());
+
 				for (int i = removedIndices.size() - 1; i >= 0; i--) {
 					instructions.remove(i);
 				}
@@ -286,9 +312,9 @@ public class ElevatorAgent implements Runnable {
 			}
 			// send new destination floor
 			sent = getNextDestinationFloor(instructions);
+			previousDirection = currentDirection;
 			logger.log("Sending: " + Arrays.toString(sent));
 			packetHandler.send(sent);
-			System.out.println();
 		}
 	}
 
@@ -298,10 +324,23 @@ public class ElevatorAgent implements Runnable {
 	@Override
 	public void run() {
 		logger.log("Starting...");
-		while (true) {
+		while (isRunning) {
 			// check for next request when idle and requests is non-empty
 			if (currentState == ElevatorState.Idle && !requests.isEmpty()) {
 				handleRequest(getNextRequest());
+			} else {
+				// check if elevator has closed or not
+				// receive status updates from elevator
+				byte[] received = packetHandler.receiveTimeout(Constants.ELEVATOR_AGENT_TIMEOUT);
+				byte[] elevFailure = new byte[] { (byte) -1, (byte) elevatorId };
+				
+				// Elevator is deemed dead if no response within given time
+				if (received == null) {
+					logger.log(elevatorId + " is now considered dead");
+					packetHandler.setReceiverPort(Constants.SCHEDULER_PORT);
+					packetHandler.send(elevFailure);
+					break;
+				}
 			}
 		}
 	}
