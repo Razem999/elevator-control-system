@@ -12,7 +12,18 @@ public class PacketHandler {
 	/** socket to be used for UDP */
 	private DatagramSocket sendReceiveSocket;
 	/** the port of the entity that we will communicate with */
-	private int sendPort; 
+	private int sendPort;
+	
+	public PacketHandler(int sendPort) {
+		this.sendPort = sendPort;
+		try {
+			sendReceiveSocket = new DatagramSocket();
+			sendReceiveSocket.setSoTimeout(Constants.TIMEOUT);
+		} catch (SocketException se) {
+			se.printStackTrace();
+			System.exit(1);
+		}
+	}
 
 	public PacketHandler(int sendPort, int receivePort) {
 		this.sendPort = sendPort;
@@ -121,26 +132,26 @@ public class PacketHandler {
 
 		return receivedData;
 	}
-
+	
 	/**
 	 * Helper function for receiving DatagramPacket over a DatagramSocket without
 	 * crashing on timeout
 	 * 
-	 * @return returns the received byte array
+	 * @param timeout time in milliseconds it takes to timeout
+	 * @return returns the received byte array, or null if the receive times out
 	 */
-	public byte[] receiveTimeout() {
+	public byte[] receiveTimeout(int timeout) {
 		// Construct a DatagramPacket for receiving packets up
 		byte receivedData[] = new byte[Constants.MAX_BUFFER_SIZE];
 		receivePacket = new DatagramPacket(receivedData, Constants.MAX_BUFFER_SIZE);
 
 		try {
+			sendReceiveSocket.setSoTimeout(timeout);
 			// Block until a datagram is received via sendReceiveSocket.
 			sendReceiveSocket.receive(receivePacket);
-			// sets the port based on who sent us a message
-			sendPort = receivePacket.getPort();
 		} catch (SocketTimeoutException e) {
 			return null;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -148,5 +159,12 @@ public class PacketHandler {
 		receivedData = trimBuffer(receivedData, receivePacket.getLength());
 
 		return receivedData;
+	}
+
+	/**
+	 * Closes the sendReceiveSocket, this should be the last PacketHandler function called 
+	 */
+	public void shutDown() {
+		sendReceiveSocket.close();
 	}
 }

@@ -4,6 +4,7 @@
 The main package contains the source code for running the main program.
 The main package consists of:
  - common package: classes that are commonly used between all other packages
+	- input package: classes for modelling/storing data read in from files
  - elevator package: elevator related classes
  - floor package: floor related classes
  - scheduler package: scheduler related classes

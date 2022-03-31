@@ -13,7 +13,8 @@ import org.junit.jupiter.api.Test;
 
 import main.common.Constants;
 import main.common.Direction;
-import main.common.Instructions;
+import main.common.Input.Fault;
+import main.common.Input.Instructions;
 import main.elevator.Elevator;
 import main.elevator.Elevator.ElevatorState;
 import main.floor.FloorManager;
@@ -35,6 +36,7 @@ public class SchedulerTest {
 	ElevatorAgent agent2;
 	ArrayList<Instructions> instructions = new ArrayList<>();
 	ArrayList<String[]> commandsList = new ArrayList<>();
+	ArrayList<Fault> faults = new ArrayList<>();
 	/**
 	 * Set up a scheduler
 	 */
@@ -50,18 +52,29 @@ public class SchedulerTest {
 		agent2 = new ElevatorAgent(elevator2.getElevatorNumber(), null, 0);
 		
 		scheduler = new Scheduler(Constants.SCHEDULER_TEST_PORT);
-		floor = new FloorManager(6);
+		floor = new FloorManager(6, "src/test/mockInstructions.txt");
 		
 		// get instructions array
-		floor.getGetInput("src/test/mockInstructions.txt");
 		File input = new File("src/test/mockInstructions.txt"); 
 		try {		
 			Scanner inputReader = new Scanner(input);
 			while (inputReader.hasNextLine()) {
 			  String line = inputReader.nextLine();
 			  String[] commands = line.split(" ");
+			  
 			  commandsList.add(commands);
-			  instructions.add(new Instructions(commands));
+			  
+			  try {
+				  instructions.add(new Instructions(commands));
+			  }
+			  catch (ArrayIndexOutOfBoundsException e) {
+				  try {
+					  faults.add(new Fault(commands));
+				  }
+				  catch (IllegalArgumentException e1) {
+					  continue;
+				  }
+			  }
 			}
 			inputReader.close();
 		} catch (FileNotFoundException e) {
@@ -98,12 +111,12 @@ public class SchedulerTest {
 	@Test
 	void testDelegatingState() {
 		assertTrue(scheduler.getState().nextState() == SchedulerStates.DELEGATING);
-		assertTrue(scheduler.getState().nextState() == SchedulerStates.LISTENING);
+		assertTrue(scheduler.getState().nextState().nextState() == SchedulerStates.LISTENING);
 	}
 	
 	@Test
 	void testFloorDifference() {
-		scheduler.getFloorDifference(2, 4, agent1.getCurrentDirection(), floor.getInstructions().get(0).getDirection(), agent1.getCurrentState());
-		assertTrue(2 - 4 == agent1.getCurrentFloor() - floor.getInstructions().get(0).getDestinationFloor());
+		scheduler.getFloorDifference(2, 4, agent1.getCurrentDirection(), ((Instructions) (floor.getInputList().get(0))).getDirection(), agent1.getCurrentState());
+		assertTrue(2 - 4 == agent1.getCurrentFloor() - ((Instructions)(floor.getInputList().get(0))).getDestinationFloor());
 	}
 }

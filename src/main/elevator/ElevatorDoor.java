@@ -3,46 +3,49 @@
  */
 package main.elevator;
 
+import main.common.Logger;
+
 /**
  * ElevatorDoor represents the door
  *
  */
 public class ElevatorDoor {
+	
+	/**
+	 * Used to communicate with the console
+	 */
+	private Logger logger;
+	
 
 	/**
-	 * Represents if door is open or not
+	 * Instantiates the Door's logger
+	 * @param elevator The door of the elevator
 	 */
-	private boolean isDoorOpen;
-	
-	/**
-	 * 
-	 */
-	public ElevatorDoor() {
-		this.isDoorOpen = false;
+	public ElevatorDoor(int elevator) {
+		this.logger = new Logger("ELEV " + elevator, "Door");
+		logger.log("Starting...");
 	}
 	
 	/**
-	 * Instantiates the elevator door with a specific position: open or closed
-	 * @param doorState Starting door position
+	 * Print out a formatted error message to the console
+	 * @param message Whether the door is closed or open
 	 */
-	public ElevatorDoor(boolean doorState) {
-		this.isDoorOpen = doorState;
+	public void error(String message) {
+		logger.log("ERROR: Doors are " + message + " for too long.");
 	}
 	
 	/**
-	 * Gives information on the door opening or not
-	 * @return The door state
+	 * Print out a formatted message to the console saying doors are opening
 	 */
-	public boolean isDoorOpen() {
-		return isDoorOpen;
+	public void open() {
+		logger.log("Doors are opening.");
 	}
 	
 	/**
-	 * Closes the door if it is open or vice versa
+	 * Print out a formatted message to the console saying doors are opening
 	 */
-	public void toggleDoorState() {
-		isDoorOpen = !isDoorOpen;
+	public void close() {
+		logger.log("Doors are closing.");
 	}
-	
-	
+
 }

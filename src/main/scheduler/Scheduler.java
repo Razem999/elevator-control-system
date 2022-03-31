@@ -8,9 +8,9 @@ import java.util.List;
 import main.common.ByteConverter;
 import main.common.Constants;
 import main.common.Direction;
-import main.common.Instructions;
 import main.common.Logger;
 import main.common.PacketHandler;
+import main.common.Input.Instructions;
 import main.elevator.Elevator.ElevatorState;
 import main.elevator.ElevatorButton;
 import main.floor.FloorButton;
@@ -92,7 +92,11 @@ public class Scheduler {
 	 * @return string
 	 */
 	public String toString() {
-		return elevatorRequests.toString();
+		String output = "";
+		for (int i = 0; i < elevatorRequests.size(); i++) {
+			output += "Agent-" + i + ": " + elevatorRequests.get(i) + "\n";
+		}
+		return output;
 	}
 
 	/**
@@ -107,7 +111,7 @@ public class Scheduler {
 		int bestScore = 0;
 		for (ElevatorAgent agent : agents) {
 			int score = getFloorDifference(agent.getCurrentFloor(), startingFloor, agent.getCurrentDirection(), direction, agent.getCurrentState());
-			if (score >= bestScore) {
+			if (score > bestScore) {
 				bestScore = score;
 				bestAgent = agent;
 			}
@@ -128,7 +132,7 @@ public class Scheduler {
 		int difference = currentFloor - startingFloor;
 		
 		switch (currentState) {
-			// Priority from best to worst:
+			// Priorities from best to worst:
 			// 1. Idle elevators within a a distance of NUM_FLOORS/4
 			// 2. Elevators that can serve the request as an intermediate request
 			// 3. Idle elevators that are farther away
@@ -162,7 +166,7 @@ public class Scheduler {
 				// Elevator is moving down
 				// if starting floor cannot be reached without changing direction
 				if (difference > 0) {
-					return 1; // TODO bad score
+					return 1;
 				// if starting floor can be reached and heading in same direction
 				} else if (currentDirection == destinationDirection) {
 					return 3;
@@ -172,7 +176,7 @@ public class Scheduler {
 			
 			// any elevator outside of the above cases is given a score of 2
 			default:
-				return 2; 
+				return 2;
 		}
 	}
 
@@ -195,8 +199,11 @@ public class Scheduler {
 		while (true) {
 			// move scheduler to listening state
 			currState = SchedulerStates.LISTENING;
-			logger.log("Current state: " + currState + "\nRequests: " + this);
-			response = packetHandler.receive(); // TODO not really a response
+			logger.log("Current state: " + currState);
+			response = packetHandler.receiveTimeout(Constants.SCHEDULER_TIMEOUT); // TODO not really a response xd
+			if (response == null) {
+				continue;
+			}
 			stringResponse = new String(response, StandardCharsets.UTF_8).substring(0, 2);
 
 			// check if input received is a valid instruction
@@ -216,7 +223,32 @@ public class Scheduler {
 				// and add the instructions to their requests queue
 				elevatorRequests.get(bestAgent.getId()).add(instruction);
 				logger.log("Sent Instruction to Elevator " + bestAgent.getId());
-				logger.log("Current state: " + currState + "\nRequests: " + this);
+				logger.log("Requests:\n" + this);
+			} else if (response[0] == (byte)-1 ) { // Received failure request from agent
+				ElevatorAgent removeAgent = null;
+				int id = -1;
+				// Pick agent to remove
+				for (ElevatorAgent agent: agents) {
+					if ((byte) agent.getId() == response[1]) {
+						removeAgent = agent;
+						id = removeAgent.getId();
+						break;
+					}
+					
+				}
+				if (removeAgent == null) continue;
+				
+				// Remove agent from possible elevators to delegate
+				agents.remove(removeAgent);
+				
+				if (agents.isEmpty()) {
+					logger.log("No more agents available. Shutting down...");
+					break;
+				}
+				
+				// we remove all instructions that were to be served by this elevator if its motor breaks down
+				elevatorRequests.get(id).clear();
+				logger.log("Requests:\n" + this);
 			}
 		}
 	}
