@@ -60,4 +60,6 @@ public class Constants {
 	
 	/** Starting port for elevator listeners */
 	public static final int MODEL_PORT = 9000;
+	/** the amount of time for a listener to give up and go home */
+	public static final int ELEVATOR_LISTENER_TIMEOUT = 10000;
 }

@@ -37,7 +37,26 @@ public class Model implements Runnable {
 			elevatorListeners.add(new ElevatorListener(i, currentFloors, nextFloors, states, elevatorFaults));
 		}
 	}
-
+	
+	/* 
+	 * Getters for view class 
+	 */
+	public int[] getCurrentFloors() {
+		return currentFloors;
+	}
+	
+	public int[] getNextFloors() {
+		return nextFloors;
+	}
+	
+	public ElevatorState[] getStates() {
+		return states;
+	}
+	
+	public FaultType[] getFaults() {
+		return elevatorFaults;
+	}
+	
 	private void startListeners() {
 		// start elevator agents
 		Thread[] listenerThreads = new Thread[Constants.NUM_CARS];

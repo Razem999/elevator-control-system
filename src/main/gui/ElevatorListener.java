@@ -3,6 +3,7 @@ package main.gui;
 import static org.junit.Assert.assertNotNull;
 
 import main.common.Constants;
+import main.common.Logger;
 import main.common.PacketHandler;
 import main.common.Input.FaultType;
 import main.elevator.Elevator.ElevatorState;
@@ -24,6 +25,8 @@ public class ElevatorListener implements Runnable {
 	private ElevatorState state;
 	/* Current fault of the elevator, if none then this is null */
 	private FaultType fault;
+	/* Logger */
+	private Logger logger;
 	
 	// ElevatorListener has access to these to update them
 	
@@ -96,7 +99,11 @@ public class ElevatorListener implements Runnable {
 	 * Listens for updates from elevator and updates own values
 	*/
 	private void getUpdate() {
-		byte[] received = handler.receive();
+		byte[] received = handler.receiveTimeout(Constants.ELEVATOR_LISTENER_TIMEOUT);
+		
+		if (received == null) {
+			
+		}
 		currFloor = (int) received[0];
 		nextFloor = (int) received[1];
 		state = parseStateFromPacket((int) received[2]);
