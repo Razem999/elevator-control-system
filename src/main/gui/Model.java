@@ -3,6 +3,8 @@ package main.gui;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import javax.swing.*;
+
 import main.common.Constants;
 import main.common.Logger;
 import main.common.Input.FaultType;
@@ -11,7 +13,9 @@ import main.elevator.Elevator.ElevatorState;
 /* 
  * The source of truth for the GUI that will hold values 
  */
+
 public class Model {
+
 	
 	/* Tracks the current floors of each elevator, index maps to elevator number */
 	private int[] currentFloors;
@@ -83,14 +87,23 @@ public class Model {
 		}
 	}
 	
-	private void run() {
+
+	public void start() {
 		startListeners();
 		// Since this is instantiated within the view class, we do not need to exit explicitly since the program terminates once the user exits the view window
 		while (true) {
+			
 			for (int i = 0; i < Constants.NUM_CARS; i++) {
 				System.out.println("ELEV " + i + " " + currentFloors[i] + " " + nextFloors[i] + " " + states[i] + " " + elevatorFaults[i] + " isAlive: " + areAlive[i]);
 			}
 			System.out.println();
+			
+//			try {
+//				doInBackground();
+//			} catch (Exception e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
 			
 			try {
 				Thread.sleep(1000);
@@ -101,10 +114,19 @@ public class Model {
 		}
 	}
 	
-	public static void main(String[] args) {
-		Model model = new Model();
-		
-		model.run();
-	}
+//	public static void main(String[] args) {
+//		Model model = new Model();
+//		
+//		model.start();
+//		
+//	}
+
+//	@Override
+//	protected String doInBackground() throws Exception {
+//		for (ElevatorListener el : elevatorListeners) {
+//			el.run();
+//		}
+//		return "Finished";
+//	}
 	
 }

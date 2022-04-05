@@ -17,6 +17,7 @@ public class View extends JFrame implements ActionListener{
 	
 	public View(Model m) {
 		super("Elevator Sim");
+		
 		model = m;
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -36,21 +37,37 @@ public class View extends JFrame implements ActionListener{
 		
 		pack();
 		setVisible(true);
+		final Timer t = new Timer(100, this);
+		t.start();
+		t.addActionListener(this);
 //		This is a potential alternative to using SwingWorker. Basically, every 1000ms, actionPerformed() will be called.
 //		 Timer t = new Timer(1000, this);
 //		 t.start();
 	}
 	
+	private void updateText() {
+		while(true) {
+//			update();
+			for (int i = 0; i < elevators.length; i++) {
+				elevators[i].updateText(model.getCurrentFloors()[i], model.getNextFloors()[i], model.getStates()[i], model.getFaults()[i]);
+			}
+			this.repaint();
+		}
+	}
+	
 	public void actionPerformed(ActionEvent e) {
 		// listen for updates?
+		updateText();
+		repaint();
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		new View(new Model());
-
+		View v = new View(new Model());
+		v.model.start();
+//		v.updateText();
 	}
 
 }
