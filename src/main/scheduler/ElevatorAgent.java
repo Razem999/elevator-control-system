@@ -260,7 +260,7 @@ public class ElevatorAgent implements Runnable {
 			// Elevator is deemed dead if no response within given time
 			if (received == null) {
 				logger.log(elevatorId + " is now considered dead");
-				packetHandler.setReceiverPort(Constants.SCHEDULER_PORT);
+				packetHandler.setSendPort(Constants.SCHEDULER_PORT);
 				packetHandler.send(elevFailure);
 				isRunning = false;
 				break;
@@ -337,7 +337,7 @@ public class ElevatorAgent implements Runnable {
 				// Elevator is deemed dead if no response within given time
 				if (received == null) {
 					logger.log(elevatorId + " is now considered dead");
-					packetHandler.setReceiverPort(Constants.SCHEDULER_PORT);
+					packetHandler.setSendPort(Constants.SCHEDULER_PORT);
 					packetHandler.send(elevFailure);
 					break;
 				}

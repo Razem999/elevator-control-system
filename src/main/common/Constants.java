@@ -55,4 +55,9 @@ public class Constants {
 	
 	/** port number of the floor manager */
 	public static final int FLOOR_MANAGER_PORT = 50;
+	
+	// Model
+	
+	/** Starting port for elevator listeners */
+	public static final int MODEL_PORT = 9000;
 }

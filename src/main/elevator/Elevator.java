@@ -8,6 +8,7 @@ import java.util.Arrays;
 import main.common.Constants;
 import main.common.Logger;
 import main.common.PacketHandler;
+import main.elevator.Elevator.ElevatorState;
 
 /**
  * The Elevator communicates with the Scheduler to travel to various Floors.
@@ -253,6 +254,53 @@ public class Elevator implements Runnable {
 		}
 	}
 	
+	/* 
+	 * Converts this elevator's current state to a byte for sending to model
+	 * @return stateByte
+	 */
+	private byte convertStateToByte() {
+		switch (elevatorState) {
+			case Idle:
+				return (byte) 0;
+			case Moving:
+				return (byte) 1;
+			case Arriving:
+				return (byte) 2;
+			default:
+				return (byte) 0;
+		}
+	}
+	
+	private byte convertFaultToByte() {
+		if (willMotorFail) {
+			return (byte) 1;
+		}
+		else if (willDoorsBeStuckOpen) {
+			return (byte) 2;
+		}
+		else if (willDoorsBeStuckClosed) {
+			return (byte) 3;
+		}
+		else {
+			return (byte) 0;
+		}
+	}
+	
+	/**
+	 * This method creates a byte array to be sent to the Model with this elevators current information
+	 * The byte array will consist of 4 integers. index 0 is current floor, index 1 is destination floor, index 2 is state, index 3 is fault
+	 * Ex: [1,10,0,0] would be curr floor: 1, destination floor: 10, state: idle, fault: none
+	 */
+	private byte[] createStatusUpdate() {
+		byte[] message = new byte[4];
+		
+		message[0] = (byte) currentFloor;
+		message[1] = (byte) destinationFloor;
+		message[2] = convertStateToByte();
+		message[3] = convertFaultToByte();
+		
+		return message;
+	}
 	/**
 	 * Shuts down the thread after closing the packetHandler's socket.
 	 */
@@ -274,6 +322,11 @@ public class Elevator implements Runnable {
 
 			switch (elevatorState) {
 				case Idle:
+					
+					// MODEL MODEL MODEL
+					packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+					// MODEL MODEL MODEL
+					
 					logger.log("Updating my agent");
 					packetHandler.send(status);
 					logger.log("Awaiting instructions from scheduler...");	
@@ -321,6 +374,11 @@ public class Elevator implements Runnable {
 						direction = (byte) ((currentFloor == destinationFloor) ? 0
 								: (currentFloor > destinationFloor ? -1 : 1));
 					}
+					
+					// MODEL MODEL MODEL
+					packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+					// MODEL MODEL MODEL
+					
 					if (destinationFloor == currentFloor) {
 						logger.log("Arriving at destination floor " + destinationFloor);
 						elevatorState = ElevatorState.Arriving;
@@ -332,6 +390,10 @@ public class Elevator implements Runnable {
 				case Arriving:
 					logger.log("I'm arriving to my destination floor " + destinationFloor);
 					openCloseDoors();
+					
+					// MODEL MODEL MODEL
+					packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+					// MODEL MODEL MODEL
 					
 					if (isFinalDestination) {
 						packetHandler.send(status);
