@@ -187,6 +187,10 @@ public class Scheduler {
 		byte[] response;
 		Instructions instruction;
 		String stringResponse;
+		long startTime = System.nanoTime();
+		long endTime = System.nanoTime();
+		boolean started = false;
+		boolean lastRequestTimed = false;
 
 		// start elevator agents
 		Thread[] agentThreads = new Thread[Constants.NUM_CARS];
@@ -201,8 +205,17 @@ public class Scheduler {
 			currState = SchedulerStates.LISTENING;
 			logger.log("Current state: " + currState);
 			response = packetHandler.receiveTimeout(Constants.SCHEDULER_TIMEOUT); // TODO not really a response xd
-			if (response == null) {
+			if (response == null) { // Assume that if response times out, that there will be no more requests
+				if (started && !lastRequestTimed) {
+					endTime = System.nanoTime();
+					logger.log("Time from first request received until last request sent (s): " + ((endTime - startTime - (Constants.SCHEDULER_TIMEOUT * 1000000)) / Math.pow(10, 9)));
+					lastRequestTimed = true;
+				}
 				continue;
+			}
+			if (!started) { // Start the timer when it receives the first request
+				started = true;
+				startTime = System.nanoTime();
 			}
 			stringResponse = new String(response, StandardCharsets.UTF_8).substring(0, 2);
 
@@ -224,6 +237,7 @@ public class Scheduler {
 				elevatorRequests.get(bestAgent.getId()).add(instruction);
 				logger.log("Sent Instruction to Elevator " + bestAgent.getId());
 				logger.log("Requests:\n" + this);
+				endTime = System.nanoTime();
 			} else if (response[0] == (byte)-1 ) { // Received failure request from agent
 				ElevatorAgent removeAgent = null;
 				int id = -1;
@@ -243,6 +257,9 @@ public class Scheduler {
 				
 				if (agents.isEmpty()) {
 					logger.log("No more agents available. Shutting down...");
+					// Time when no more elevators available
+					endTime = System.nanoTime();
+					logger.log("Time from first request to elevators finishing requests or all broken down (s): " + ((endTime - startTime) / Math.pow(10, 9)));
 					break;
 				}
 				
