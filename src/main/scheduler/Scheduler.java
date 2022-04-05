@@ -183,7 +183,7 @@ public class Scheduler {
 	/**
 	 * Main run method for the scheduler thread
 	 */
-	public void run() {
+	private void run() {
 		byte[] response;
 		Instructions instruction;
 		String stringResponse;

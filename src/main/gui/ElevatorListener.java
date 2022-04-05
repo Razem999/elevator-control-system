@@ -38,9 +38,10 @@ public class ElevatorListener implements Runnable {
 	private ElevatorState[] states;
 	/* Tracks the faults of each elevator, index maps to elevator number, if no fault, then value will be null */
 	private FaultType[] elevatorFaults;
+	/* The model */
+	Model model;
 	
-	
-	public ElevatorListener(int elevatorNumber, int[] currentFloors, int[] nextFloors, ElevatorState[] states, FaultType[] elevatorFaults) {
+	public ElevatorListener(int elevatorNumber, int[] currentFloors, int[] nextFloors, ElevatorState[] states, FaultType[] elevatorFaults, Model model) {
 		this.elevatorNumber = elevatorNumber;
 		this.handler = new PacketHandler(69, Constants.MODEL_PORT + elevatorNumber);
 		this.currFloor = 1;
@@ -53,6 +54,8 @@ public class ElevatorListener implements Runnable {
 		this.nextFloors = nextFloors;
 		this.states = states;
 		this.elevatorFaults = elevatorFaults;
+		this.model = model;
+		this.logger = new Logger("Elevator Listener " + elevatorNumber);
 	}
 	
 	/**
@@ -98,16 +101,20 @@ public class ElevatorListener implements Runnable {
 	/** 
 	 * Listens for updates from elevator and updates own values
 	*/
-	private void getUpdate() {
+
+	private boolean getUpdate() {
 		byte[] received = handler.receiveTimeout(Constants.ELEVATOR_LISTENER_TIMEOUT);
 		
 		if (received == null) {
-			
+			logger.log("Elevator " + elevatorNumber + " is now died");
+			model.killElevator(elevatorNumber);
+			return false;
 		}
 		currFloor = (int) received[0];
 		nextFloor = (int) received[1];
 		state = parseStateFromPacket((int) received[2]);
 		fault = parseFaultFromPacket((int) received[3]);
+		return true;
 	}
 	
 	private void updateModel() {
@@ -130,9 +137,7 @@ public class ElevatorListener implements Runnable {
 	
 	@Override
 	public void run() {
-		while(true) {
-			getUpdate();
-			
+		while(getUpdate()) {
 			updateModel();
 		}
 	}
