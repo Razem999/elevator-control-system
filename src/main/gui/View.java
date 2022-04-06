@@ -46,13 +46,11 @@ public class View extends JFrame implements ActionListener{
 	}
 	
 	private void updateText() {
-		while(true) {
 //			update();
-			for (int i = 0; i < elevators.length; i++) {
-				elevators[i].updateText(model.getCurrentFloors()[i], model.getNextFloors()[i], model.getStates()[i], model.getFaults()[i]);
-			}
-			this.repaint();
+		for (int i = 0; i < elevators.length; i++) {
+			elevators[i].updateText(model.getCurrentFloors()[i], model.getNextFloors()[i], model.getStates()[i], model.getFaults()[i]);
 		}
+		this.repaint();
 	}
 	
 	public void actionPerformed(ActionEvent e) {

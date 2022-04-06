@@ -78,7 +78,7 @@ public class Model {
 		areAlive[elevatorNumber] = false;
 	}
 	
-	private void startListeners() {
+	public void startListeners() {
 		// start elevator agents
 		Thread[] listenerThreads = new Thread[Constants.NUM_CARS];
 		for (int i = 0; i < elevatorListeners.size(); i++) {
@@ -86,7 +86,6 @@ public class Model {
 			listenerThreads[i].start();
 		}
 	}
-	
 
 	public void start() {
 		startListeners();

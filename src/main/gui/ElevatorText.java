@@ -1,6 +1,8 @@
 package main.gui;
 
 import java.awt.*;
+import java.util.Objects;
+
 import javax.swing.*;
 
 import main.common.Input.FaultType;
@@ -34,7 +36,7 @@ public class ElevatorText extends JPanel {
 		currfloor.setText(String.valueOf(currFloor));
 		destfloor.setText(String.valueOf(destFloor));
 		status.setText(state == null ? "Uninitialized" : state.toString());
-		faultStatus.setText(fault.toString());
+		faultStatus.setText(Objects.isNull(fault) ? "No fault" : fault.toString());
 	}
 
 }
