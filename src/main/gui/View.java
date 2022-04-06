@@ -10,24 +10,33 @@ import javax.swing.*;
 
 public class View extends JFrame implements ActionListener{
 	
-	private JPanel panel;
+	
 	private ElevatorText[] elevators;
 	
 	private Model model;
 	
 	public View(Model m) {
-		super("Elevator Sim");
+		super("Dunton Tower Elevator System Super");
 		
 		model = m;
 		
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setPreferredSize(new Dimension(1000, 1000));
+		setPreferredSize(new Dimension(1200, 1000));
 		setMinimumSize(new Dimension(500, 500));
+		setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
 		
-		panel = new JPanel();
+		JPanel titlePanel = new JPanel();
+		titlePanel.setMaximumSize(new Dimension(275, 50));
+		add(titlePanel);
+
+		JPanel panel = new JPanel();
 		panel.setBorder(BorderFactory.createEmptyBorder(30, 30, 10, 30));
-		
 		add(panel);
+		
+		JLabel title = new JLabel("Dunton Tower Elevator System");
+		title.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
+		title.setHorizontalAlignment(JLabel.CENTER);
+		titlePanel.add(title);
 		
 		elevators = new ElevatorText[model.getCurrentFloors().length];
 		for (int i = 0; i < model.getCurrentFloors().length; i++) {
@@ -36,10 +45,8 @@ public class View extends JFrame implements ActionListener{
 		}
 		
 		pack();
+		new Timer(100, this).start();
 		setVisible(true);
-		final Timer t = new Timer(100, this);
-		t.start();
-		t.addActionListener(this);
 	}
 	
 	private void updateText() {

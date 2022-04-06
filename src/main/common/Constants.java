@@ -8,6 +8,7 @@ public class Constants {
 	
 	/** The amount of active Elevators */
 	public static final int NUM_CARS = 4;
+
 	/** The amount of active Floors */
 	public static final int NUM_FLOORS = 22;
 	/** The max byte array size that we will support sending over UDP */

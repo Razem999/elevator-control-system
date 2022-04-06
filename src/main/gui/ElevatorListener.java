@@ -1,7 +1,5 @@
 package main.gui;
 
-import static org.junit.Assert.assertNotNull;
-
 import main.common.Constants;
 import main.common.Logger;
 import main.common.PacketHandler;

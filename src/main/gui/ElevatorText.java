@@ -34,9 +34,9 @@ public class ElevatorText extends JPanel {
 	
 	public void updateText(int currFloor, int destFloor, ElevatorState state, FaultType fault) {
 		currfloor.setText("Current Floor: " + currFloor);
-		destfloor.setText("Current Floor: " + destFloor);
+		destfloor.setText("Destination Floor: " + destFloor);
 		status.setText("Status: " + (state == null ? "Uninitialized" : state.toString()));
-		faultStatus.setText("Fault: " + fault);
+		faultStatus.setText(Objects.isNull(fault) ? "No fault" : fault.toString());
 	}
 
 }
