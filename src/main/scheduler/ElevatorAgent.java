@@ -3,9 +3,9 @@
  */
 package main.scheduler;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import main.common.Logger;
@@ -44,6 +44,10 @@ public class ElevatorAgent implements Runnable {
 	 */
 	private final List<Instructions> requests;
 	/**
+	 * Indicates whether a pickup for a request was done.
+	 */
+	private final HashMap<Instructions, Boolean> pickedUpRequests;
+	/**
 	 * PacketHandler instance for communication.
 	 */
 	private final PacketHandler packetHandler;
@@ -70,12 +74,14 @@ public class ElevatorAgent implements Runnable {
 	public ElevatorAgent(int elevatorId, List<Instructions> requests, int currentFloor) {
 		this.currentState = ElevatorState.Idle;
 		this.currentDirection = Direction.STOP;
+		this.previousDirection = Direction.STOP;
 		this.currentFloor = currentFloor;
 		this.elevatorId = elevatorId;
 		this.requests = requests;
+		this.pickedUpRequests = new HashMap<>();
 		this.isRunning = true;
 		this.packetHandler = new PacketHandler(Constants.ELEVATOR_STARTING_PORT_NUMBER + elevatorId, Constants.ELEVATOR_AGENT_STARTING_PORT_NUMBER + elevatorId);
-		this.logger = new Logger("ELEV-AGENT-" + elevatorId);
+		this.logger = new Logger("EAGENT " + elevatorId);
 	}
 	
 	/**
@@ -90,6 +96,12 @@ public class ElevatorAgent implements Runnable {
 	 * @return Direction - current direction.
 	 */
 	public Direction getCurrentDirection() { return currentDirection; }
+	/**
+	 * Getter for previous elevator direction.
+	 * 
+	 * @return Direction - previous direction.
+	 */
+	public Direction getPreviousDirection() { return previousDirection; }
 	/**
 	 * Getter for current elevator floor.
 	 * 
@@ -136,6 +148,7 @@ public class ElevatorAgent implements Runnable {
 		} else {
 			currentDirection = Direction.STOP;
 		}
+		previousDirection = currentDirection;
 		// update elevator state
 		currentState = ElevatorState.Moving;
 		return nextInstruction;
@@ -166,6 +179,7 @@ public class ElevatorAgent implements Runnable {
 		if (intermediate != null) {
 			requests.remove(intermediateIndex);
 			instructions.add(intermediate);
+			pickedUpRequests.put(intermediate, false);
 			return true;
 		}
 		return false;
@@ -195,39 +209,31 @@ public class ElevatorAgent implements Runnable {
 			// candidate floor represents the floor that we will potentially go to next, initialize it to 0 if we are going down, the top floor
 			// if we are going up, since we are trying to find the minimum distance to travel in the same direction we are already headed
 			int candidateFloor;
-			if (direction == Direction.UP) {;
-				// if the instructions pickup floor is greater than the elevator's current floor, we need to pick people up
-				if (ins.getCurrentFloor() > currentFloor) {
-					candidateFloor = ins.getCurrentFloor();
-				// if the instructions destination floor is greater than the elevator's current floor, we need to drop people off
-				} else {
-					candidateFloor = ins.getDestinationFloor();
-				}
-				// vice versa for if we are going down
+
+			// if the pickup hasn't been completed yet, we should do that first
+			if (!pickedUpRequests.get(ins)) {
+				candidateFloor = ins.getCurrentFloor();
+			// otherwise, set the dropoff floor as the candidate
 			} else {
-				if (ins.getCurrentFloor() < currentFloor) {
-					candidateFloor = ins.getCurrentFloor();
-				} else {
-					candidateFloor = ins.getDestinationFloor();
-				}
+				candidateFloor = ins.getDestinationFloor();
 			}
-			
+
 			// we compare the candidateFloor to the current minimum distance destination, and replace it if
 			// candidate is more favorable
 			int difference = Math.abs(candidateFloor - currentFloor);
 			if (difference < minDifference && difference != 0) {
 				minDifference = difference;
 				nextFloor = candidateFloor;
-				// if there is only one instruction left and this is the destination of the request
-				// indicate to the elevator that this is the last floor
-				lastFloor = 0;
-				for (Instructions ins2 : instructions) {
-					if (nextFloor == ins2.getDestinationFloor()) {
-						lastFloor += 1;
-					} else {
-						break;
-					}
-				}
+			}
+		}
+		// if there is only one instruction left and this is the destination of the request
+		// indicate to the elevator that this is the last floor
+		lastFloor = 0;
+		for (Instructions ins : instructions) {
+			if (pickedUpRequests.get(ins) && nextFloor == ins.getDestinationFloor()) {
+				lastFloor += 1;
+			} else {
+				break;
 			}
 		}
 		return new byte[] { (byte) nextFloor, (byte) (lastFloor == instructions.size() ? 1 : 0) };
@@ -243,6 +249,7 @@ public class ElevatorAgent implements Runnable {
 		// store instructions for this request
 		ArrayList<Instructions> instructions = new ArrayList<>();
 		instructions.add(ins);
+		pickedUpRequests.put(ins, false);
 		int currentDestination = ins.getCurrentFloor();
 
 		// send first instructions to elevator
@@ -252,8 +259,8 @@ public class ElevatorAgent implements Runnable {
 		logger.log("Sending first instruction: " + Arrays.toString(sent));
 		packetHandler.send(sent);
 
-		// while elevator is moving
-		while (currentState == ElevatorState.Moving) {
+		// while elevator is moving or arriving
+		while (currentState == ElevatorState.Moving || currentState == ElevatorState.Arriving) {
 			// receive status updates from elevator
 			byte[] received = packetHandler.receiveTimeout(Constants.ELEVATOR_AGENT_TIMEOUT);
 			
@@ -266,10 +273,16 @@ public class ElevatorAgent implements Runnable {
 				break;
 			}
 			
-			logger.log("Received: " + Arrays.toString(received));
+//			logger.log("Received: " + Arrays.toString(received));
 			currentFloor = received[1];
+			previousDirection = currentDirection;
 			currentDirection = received[2] == 0 ? Direction.STOP : received[2] == 1 ? Direction.UP : Direction.DOWN;
-			logger.log("Elevator is at floor " + currentFloor + ", heading " + currentDirection);
+			if (currentDirection == Direction.STOP) {
+				logger.log("Elevator is arriving at floor " + currentFloor);
+				currentState = ElevatorState.Arriving;
+			} else {
+				logger.log("Elevator is passing floor " + currentFloor + ", heading " + currentDirection);
+			}
 			// check if intermediate requests can be dealt with here
 			if (!requests.isEmpty()) {
 				logger.log("Checking for intermediate requests...");
@@ -284,23 +297,31 @@ public class ElevatorAgent implements Runnable {
 			}
 			// check if elevator has stopped and reached a destination floor
 			if (currentDirection == Direction.STOP && !firstPickup) {
-				logger.log("Elevator stopped moving!");
-				ArrayList<Integer> removedIndices = new ArrayList<>();
-				logger.log("Currently servicing requests: " + instructions.toString());
+				logger.log("Elevator arrived at a pickup/dropoff floor");
+				ArrayList<Integer> toBePickedUp = new ArrayList<>();
+				ArrayList<Integer> toBeRemoved = new ArrayList<>();
+//				logger.log("Currently servicing requests: " + instructions.toString());
 				for (int i = 0; i < instructions.size(); i++) {
 					// elevator reached pickup floor
 					Instructions temp = instructions.get(i);
-					if (currentFloor == temp.getCurrentFloor()) {
+					if (!pickedUpRequests.get(temp) && currentFloor == temp.getCurrentFloor()) {
 						logger.log("Elevator is picking up passengers at floor " + currentFloor + " to drop off at " + temp.getDestinationFloor());
+						toBePickedUp.add(i);
 					// elevator reached dropoff floor
-					} else if (currentFloor == instructions.get(i).getDestinationFloor()) {
+					} else if (pickedUpRequests.get(temp) && currentFloor == instructions.get(i).getDestinationFloor()) {
 						logger.log("Elevator is dropping off passengers from floor " + temp.getCurrentFloor() + " to floor " + currentFloor);
-						removedIndices.add(i);
+						toBeRemoved.add(i);
 					}
 				}
-
-				for (int i = removedIndices.size() - 1; i >= 0; i--) {
-					instructions.remove(i);
+				// update pick ups
+				for (Integer i : toBePickedUp) {
+					pickedUpRequests.put(instructions.get(i), true);
+				}
+				// remove completed requests
+				for (int i = toBeRemoved.size() - 1; i >= 0; i--) {
+					int idx = toBeRemoved.get(i);
+					pickedUpRequests.remove(instructions.get(idx));
+					instructions.remove(idx);
 				}
 			}
 			// check if no more instructions
@@ -312,10 +333,15 @@ public class ElevatorAgent implements Runnable {
 			}
 			// send new destination floor
 			sent = getNextDestinationFloor(instructions);
-			previousDirection = currentDirection;
-			logger.log("Sending: " + Arrays.toString(sent));
+//			logger.log("Sending: " + Arrays.toString(sent));
+			logger.log("Sending destination floor " + sent[0] + (sent[1] == 1 ? ". This is its last destination." : ""));
 			packetHandler.send(sent);
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("ElevatorAgent(%d, %s, %d, %s)", elevatorId, currentState.toString(), currentFloor, currentDirection.toString());
 	}
 
 	/**

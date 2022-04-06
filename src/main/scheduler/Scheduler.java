@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import main.common.ByteConverter;
 import main.common.Constants;
@@ -12,8 +13,6 @@ import main.common.Logger;
 import main.common.PacketHandler;
 import main.common.Input.Instructions;
 import main.elevator.Elevator.ElevatorState;
-import main.elevator.ElevatorButton;
-import main.floor.FloorButton;
 
 /**
  * Class to represent the backend server to handle communication between
@@ -107,76 +106,110 @@ public class Scheduler {
 	 * @return
 	 */
 	private ElevatorAgent getBestElevator(int startingFloor, Direction direction) {
-		ElevatorAgent bestAgent = null;
+		ArrayList<ElevatorAgent> bestAgents = new ArrayList<>();
 		int bestScore = 0;
 		for (ElevatorAgent agent : agents) {
-			int score = getFloorDifference(agent.getCurrentFloor(), startingFloor, agent.getCurrentDirection(), direction, agent.getCurrentState());
+			int score = getFloorDifference(startingFloor, agent.getCurrentFloor(), direction, agent.getCurrentDirection(), agent.getPreviousDirection(), agent.getCurrentState(), agent.getId());
 			if (score > bestScore) {
 				bestScore = score;
-				bestAgent = agent;
+				bestAgents = new ArrayList<>();
+				bestAgents.add(agent);
+			} else if (score == bestScore) {
+				bestAgents.add(agent);
 			}
 		}
-		return bestAgent;
+		// may the odds be ever in your favour
+		// let the hunger games begin
+		logger.log("SCORE: " + bestScore + ", AGENTS: " + bestAgents);
+		return bestAgents.get(ThreadLocalRandom.current().nextInt(0, bestAgents.size()));
 	}
-	
+
 	/**
 	 * This function assigns an elevator a score for handling a given request, where higher is better
-	 * @param currentFloor the current floor of the elevator
 	 * @param startingFloor the starting floor for the instruction
-	 * @param currentDirection the current direction of the elevator
+	 * @param currentFloor the current floor of the elevator
 	 * @param destinationDirection the direction of the instruction
+	 * @param currentDirection the current direction of the elevator
+	 * @param previousDirection Direction - previous direction of the elevator if applicable
+	 * @param id int - id of the elevator agent
 	 * @return integer between 1 and 4 representing that elevator's score to handle a request, higher is better
 	 */
-	public int getFloorDifference(int currentFloor, int startingFloor, Direction currentDirection, Direction destinationDirection, ElevatorState currentState) {
-		
+	public int getFloorDifference(int startingFloor, int currentFloor, Direction destinationDirection, Direction currentDirection, Direction previousDirection, ElevatorState currentState, int id) {
 		int difference = currentFloor - startingFloor;
-		
+
 		switch (currentState) {
 			// Priorities from best to worst:
-			// 1. Idle elevators within a a distance of NUM_FLOORS/4
-			// 2. Elevators that can serve the request as an intermediate request
-			// 3. Idle elevators that are farther away
-			// 4. Any other elevator
-			
+			// 1st - Idle elevators within a a distance of NUM_FLOORS/4
+			// 2nd - Elevators that can serve the request as an intermediate request
+			// 3rd - Idle elevators that are farther away
+			// 4th - Any other elevator
+
 			// If the elevator is idle
+			default:
 			case Idle:
+				// catch elevators that haven't switched over to MOVING yet from their first request
+				if (elevatorRequests.get(id).size() > 0) {
+					return getFloorDifference(startingFloor, currentFloor, destinationDirection, elevatorRequests.get(id).get(0).getDirection(), previousDirection, ElevatorState.Moving, id);
 				// Best case is an idle elevator that is close to the pickup floor
-				if (difference <= Math.ceil(Constants.NUM_FLOORS/4)) {
-					return 4;
+				} else if (Math.abs(difference) <= Math.ceil(Constants.NUM_FLOORS/3)) {
+					return 5;
 				}
 				// Idle elevators that are far away are given a fair score
-				else {
-					return 2;
-				}
+				return 3;
 			// Elevator is currently moving
 			case Moving:
-				// Elevator is moving up
-				if (currentDirection == Direction.UP) {
-					// if starting floor cannot be reached without changing direction
-					if (difference < 0) {
-						return 1; 
-					// if starting floor can be reached and heading in same direction, this is 
-					// our second most favorable case
-					} else if (currentDirection == destinationDirection) {
-						return 3; 
+				switch (currentDirection) {
+					// catch elevators that are "arriving" and don't have a current direction
+					case STOP:
+						return getFloorDifference(startingFloor, currentFloor, destinationDirection, currentDirection, previousDirection, ElevatorState.Arriving, id);
+					case UP:
+						// if starting floor cannot be reached without changing direction
+						if (difference > 0) {
+							return 1;
+						// if starting floor can be reached and heading in same direction, this is 
+						// our second most favorable case
+						} else if (currentDirection.equals(destinationDirection)) {
+							if (Math.abs(difference) <= Math.ceil(Constants.NUM_FLOORS/4)) {
+								return 4;
+							} else {
+								return 2;
+							}
+						}
+						// if starting floor can be reached but needs changing direction
+						return 1;
+					case DOWN:
+						// Elevator is moving down
+						// if starting floor cannot be reached without changing direction
+						if (difference < 0) {
+							return 1;
+						// if starting floor can be reached and heading in same direction
+						} else if (currentDirection.equals(destinationDirection)) {
+							if (Math.abs(difference) <= Math.ceil(Constants.NUM_FLOORS/4)) {
+								return 4;
+							} else {
+								return 2;
+							}
+						}
+						// if starting floor can be reached but needs changing direction
+						return 1;
+				}
+			// Elevator is arriving at a floor
+			case Arriving:
+				switch (previousDirection) {
+					// catch elevators that don't have a direction
+					default:
+					case STOP:
+						// if there is a request, use the request's direction
+						if (elevatorRequests.get(id).size() > 0) {
+							return getFloorDifference(startingFloor, currentFloor, destinationDirection, elevatorRequests.get(id).get(0).getDirection(), null, ElevatorState.Moving, id);
+						}
+						// somehow the elevator has arrived, stopped, and was not previously moving in a direction (??)
+						return 1;
+					// pass in previous direction as the new current direction
+					case UP:
+					case DOWN:
+						return getFloorDifference(startingFloor, currentFloor, destinationDirection, previousDirection, null, ElevatorState.Moving, id);
 					}
-					// if starting floor can be reached but needs changing direction
-					return 1; 
-				}
-				// Elevator is moving down
-				// if starting floor cannot be reached without changing direction
-				if (difference > 0) {
-					return 1;
-				// if starting floor can be reached and heading in same direction
-				} else if (currentDirection == destinationDirection) {
-					return 3;
-				}
-				// if starting floor can be reached but needs changing direction
-				return 1; 
-			
-			// any elevator outside of the above cases is given a score of 2
-			default:
-				return 2;
 		}
 	}
 
@@ -222,8 +255,8 @@ public class Scheduler {
 			// check if input received is a valid instruction
 			if (stringResponse.equals("UP") || stringResponse.equals("DO")) {
 				// convert instruction bytes to instruction object
-				logger.log("Received Instruction");
 				instruction = ByteConverter.byteArrayToInstructions(response);
+				logger.log("Received: " + instruction);
 				// send acknowledgement
 				packetHandler.send(new byte[] { 0 });
 				logger.log("Sent acknowledgement");
@@ -232,12 +265,12 @@ public class Scheduler {
 				currState = SchedulerStates.DELEGATING;
 				// get best elevator to deal with this
 				ElevatorAgent bestAgent = getBestElevator(instruction.getCurrentFloor(), instruction.getDirection());
-				logger.log("Best agent found is ELEV-AGENT-" + bestAgent.getId());
+				logger.log("Best agent found is " + bestAgent);
 				// and add the instructions to their requests queue
 				elevatorRequests.get(bestAgent.getId()).add(instruction);
-				logger.log("Sent Instruction to Elevator " + bestAgent.getId());
 				logger.log("Requests:\n" + this);
 				endTime = System.nanoTime();
+
 			} else if (response[0] == (byte)-1 ) { // Received failure request from agent
 				ElevatorAgent removeAgent = null;
 				int id = -1;

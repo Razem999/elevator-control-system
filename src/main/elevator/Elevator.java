@@ -3,12 +3,9 @@
  */
 package main.elevator;
 
-import java.util.Arrays;
-
 import main.common.Constants;
 import main.common.Logger;
 import main.common.PacketHandler;
-import main.elevator.Elevator.ElevatorState;
 
 /**
  * The Elevator communicates with the Scheduler to travel to various Floors.

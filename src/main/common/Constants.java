@@ -7,9 +7,9 @@ public class Constants {
 	// Overall options
 	
 	/** The amount of active Elevators */
-	public static final int NUM_CARS = 5;
+	public static final int NUM_CARS = 4;
 	/** The amount of active Floors */
-	public static final int NUM_FLOORS = 6;
+	public static final int NUM_FLOORS = 22;
 	/** The max byte array size that we will support sending over UDP */
 	public static final int MAX_BUFFER_SIZE = 100;
 	/** The time a UDP Listener will wait before timing out */
