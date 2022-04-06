@@ -78,6 +78,7 @@ public class Model {
 		areAlive[elevatorNumber] = false;
 	}
 	
+	/* Start the listener threads */
 	public void startListeners() {
 		// start elevator agents
 		Thread[] listenerThreads = new Thread[Constants.NUM_CARS];
@@ -86,46 +87,22 @@ public class Model {
 			listenerThreads[i].start();
 		}
 	}
-
+	
+	/* start the model */
 	public void start() {
 		startListeners();
 		// Since this is instantiated within the view class, we do not need to exit explicitly since the program terminates once the user exits the view window
 		while (true) {
-			
 			for (int i = 0; i < Constants.NUM_CARS; i++) {
 				System.out.println("ELEV " + i + " " + currentFloors[i] + " " + nextFloors[i] + " " + states[i] + " " + elevatorFaults[i] + " isAlive: " + areAlive[i]);
 			}
 			System.out.println();
-			
-//			try {
-//				doInBackground();
-//			} catch (Exception e1) {
-//				// TODO Auto-generated catch block
-//				e1.printStackTrace();
-//			}
-			
+
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
-	
-//	public static void main(String[] args) {
-//		Model model = new Model();
-//		
-//		model.start();
-//		
-//	}
-
-//	@Override
-//	protected String doInBackground() throws Exception {
-//		for (ElevatorListener el : elevatorListeners) {
-//			el.run();
-//		}
-//		return "Finished";
-//	}
-	
 }

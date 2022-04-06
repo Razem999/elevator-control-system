@@ -33,10 +33,10 @@ public class ElevatorText extends JPanel {
 	}
 	
 	public void updateText(int currFloor, int destFloor, ElevatorState state, FaultType fault) {
-		currfloor.setText(String.valueOf(currFloor));
-		destfloor.setText(String.valueOf(destFloor));
-		status.setText(state == null ? "Uninitialized" : state.toString());
-		faultStatus.setText(Objects.isNull(fault) ? "No fault" : fault.toString());
+		currfloor.setText("Current Floor: " + currFloor);
+		destfloor.setText("Current Floor: " + destFloor);
+		status.setText("Status: " + (state == null ? "Uninitialized" : state.toString()));
+		faultStatus.setText("Fault: " + fault);
 	}
 
 }

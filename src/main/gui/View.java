@@ -40,13 +40,9 @@ public class View extends JFrame implements ActionListener{
 		final Timer t = new Timer(100, this);
 		t.start();
 		t.addActionListener(this);
-//		This is a potential alternative to using SwingWorker. Basically, every 1000ms, actionPerformed() will be called.
-//		 Timer t = new Timer(1000, this);
-//		 t.start();
 	}
 	
 	private void updateText() {
-//			update();
 		for (int i = 0; i < elevators.length; i++) {
 			elevators[i].updateText(model.getCurrentFloors()[i], model.getNextFloors()[i], model.getStates()[i], model.getFaults()[i]);
 		}
@@ -54,7 +50,6 @@ public class View extends JFrame implements ActionListener{
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		// listen for updates?
 		updateText();
 		repaint();
 	}
@@ -65,7 +60,6 @@ public class View extends JFrame implements ActionListener{
 	public static void main(String[] args) {
 		View v = new View(new Model());
 		v.model.start();
-//		v.updateText();
 	}
 
 }
