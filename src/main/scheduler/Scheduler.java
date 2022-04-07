@@ -212,6 +212,14 @@ public class Scheduler {
 					}
 		}
 	}
+	
+	/**
+	 * Getting Elevator agents
+	 * @return elevator agents arraylist
+	 */
+	public ArrayList<ElevatorAgent> getAgents() {
+		return agents;
+	}
 
 	/**
 	 * Main run method for the scheduler thread

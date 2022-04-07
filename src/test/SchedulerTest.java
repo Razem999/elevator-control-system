@@ -42,16 +42,18 @@ public class SchedulerTest {
 	 */
 	@BeforeEach
 	void setup() {
-		elevator1 = new Elevator(123);
-		elevator2 = new Elevator(321);
+		elevator1 = new Elevator(10);
+		elevator2 = new Elevator(11);
 		
 		elevator1.setState(eStates.Idle);
 		elevator2.setState(eStates.Idle);
 		
-		agent1 = new ElevatorAgent(elevator1.getElevatorNumber(), null, 2);
-		agent2 = new ElevatorAgent(elevator2.getElevatorNumber(), null, 0);
-		
 		scheduler = new Scheduler(Constants.SCHEDULER_TEST_PORT);
+		
+		ArrayList<ElevatorAgent> agents = scheduler.getAgents();
+		agent1 = agents.get(0);
+		agent2 = agents.get(1);
+		
 		floor = new FloorManager(6, "src/test/mockInstructions.txt");
 		
 		// get instructions array
@@ -116,7 +118,7 @@ public class SchedulerTest {
 	
 	@Test
 	void testFloorDifference() {
-		scheduler.getFloorDifference(2, 4, agent1.getCurrentDirection(), ((Instructions) (floor.getInputList().get(0))).getDirection(), agent1.getCurrentState());
-		assertTrue(2 - 4 == agent1.getCurrentFloor() - ((Instructions)(floor.getInputList().get(0))).getDestinationFloor());
+		int score = scheduler.getFloorDifference(2, 4, agent1.getCurrentDirection(), ((Instructions) (floor.getInputList().get(0))).getDirection(), agent1.getPreviousDirection(), agent1.getCurrentState(), agent1.getId());
+		assertTrue(score == 5);
 	}
 }

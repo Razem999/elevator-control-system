@@ -225,21 +225,28 @@ public class Elevator implements Runnable {
 	private void openCloseDoors() {
 		byte[] response;
 		int count = willDoorsBeStuckClosed ? 2 : 1;
+		door.open();
 		while (count > 0) {
-			door.open();
+			if (willDoorsBeStuckClosed) {
+				door.error("closed");
+				count++;
+				logger.log("Door, Trying to open the door");
+			}
 			willDoorsBeStuckClosed = false;
 			response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIME_FOR_DOORS);
 			processMessage(response);
 			count--;
-			if (willDoorsBeStuckClosed) {
-				count += 1;
-				door.error("closed");
-			}
 		}
+		logger.log("Door, Opened");
 		
 		count = willDoorsBeStuckOpen ? 2 : 1;
+		door.close();
 		while (count > 0) {
-			door.close();
+			if (willDoorsBeStuckOpen) {
+				door.error("open");
+				count++;
+				logger.log("Door, Trying to close the door");
+			}
 			willDoorsBeStuckOpen = false;
 			response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIME_FOR_DOORS);
 			processMessage(response);
@@ -249,6 +256,7 @@ public class Elevator implements Runnable {
 				door.error("open");
 			}
 		}
+		logger.log("Door, Closed");
 	}
 	
 	/* 
