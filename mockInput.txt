@@ -6,6 +6,7 @@
 10:00:03.6 10 Down 2
 10:00:04.3 7 Down 1
 10:00:05.1 5 Up 15
+10:00:05.5 MotorFault 0
 10:00:06.2 1 Up 9
 10:00:06.7 OpenDoorFault 3
 10:00:07.5 CloseDoorFault 1
@@ -13,8 +14,7 @@
 10:00:10.3 18 Down 15
 10:00:10.8 15 Down 1
 10:01:11.9 11 Down 2
-10:01:12.2 OpenDoorFault 0
-10:01:12.5 MotorFault 0
+10:01:12.2 OpenDoorFault 2
 10:01:13.7 20 Down 1
 10:01:14.2 2 Up 19
 10:01:15.0 16 Up 19

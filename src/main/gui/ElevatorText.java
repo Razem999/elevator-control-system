@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import javax.swing.*;
 
+import main.common.Input.Fault;
 import main.common.Input.FaultType;
 import main.elevator.Elevator.ElevatorState;
 
@@ -55,7 +56,7 @@ public class ElevatorText extends JPanel {
 	public void updateText(int currFloor, int destFloor, ElevatorState state, FaultType fault) {
 		currfloor.setText("Current Floor: " + currFloor);
 		destfloor.setText("Destination Floor: " + destFloor);
-		status.setText("Status: " + (state == null ? "Uninitialized" : state.toString()));
+		status.setText("Status: " + ((fault == FaultType.MotorFault) ? "DEAD" : (state == null ? "Uninitialized" : state.toString())));
 		faultStatus.setText(Objects.isNull(fault) ? "No fault" : fault.toString());
 	}
 
