@@ -37,7 +37,7 @@ public class ElevatorListener implements Runnable {
 	/* Tracks the faults of each elevator, index maps to elevator number, if no fault, then value will be null */
 	private FaultType[] elevatorFaults;
 	/* The model */
-	Model model;
+	private Model model;
 	
 	public ElevatorListener(int elevatorNumber, int[] currentFloors, int[] nextFloors, ElevatorState[] states, FaultType[] elevatorFaults, Model model) {
 		this.elevatorNumber = elevatorNumber;
