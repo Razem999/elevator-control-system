@@ -8,13 +8,21 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
+/**
+ * The View class is responsible for drawing a user interface to make the state of Elevator's more readable.
+ *
+ */
 public class View extends JFrame implements ActionListener{
 	
-	
+	/** ElevatorText array will represent the state of every Elevator running in the program */
 	private ElevatorText[] elevators;
-	
+	/** This Model instance provides all the information rendered by the View */
 	private Model model;
 	
+	/**
+	 * View constructor, instantiates model and builds the GUI for the user to look at.
+	 * @param m The model passed into this View
+	 */
 	public View(Model m) {
 		super("Dunton Tower Elevator System Super");
 		
@@ -49,6 +57,10 @@ public class View extends JFrame implements ActionListener{
 		setVisible(true);
 	}
 	
+	/**
+	 * Helper function which will go through all ElevatorText instances and update them
+	 */
+	
 	private void updateText() {
 		for (int i = 0; i < elevators.length; i++) {
 			elevators[i].updateText(model.getCurrentFloors()[i], model.getNextFloors()[i], model.getStates()[i], model.getFaults()[i]);
@@ -56,17 +68,20 @@ public class View extends JFrame implements ActionListener{
 		this.repaint();
 	}
 	
+	/**
+	 * actionPerformed calls updateText() every timer interval
+	 */
 	public void actionPerformed(ActionEvent e) {
 		updateText();
 		repaint();
 	}
 
 	/**
+	 * Creates an instance of View and runs the associated model
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		View v = new View(new Model());
-		v.model.start();
+		new View(new Model()).model.start();
 	}
 
 }

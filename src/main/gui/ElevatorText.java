@@ -8,10 +8,23 @@ import javax.swing.*;
 import main.common.Input.FaultType;
 import main.elevator.Elevator.ElevatorState;
 
+/**
+ * The ElevatorText class is a JPanel containing labels depicting the state of a specific elevator. 
+ *
+ */
 public class ElevatorText extends JPanel {
 	
-	JLabel elevNum, currfloor, destfloor, status, faultStatus;
+	/** JLabels used to display the elevator number, current floor, destination floor, status, and any faults */
+	private JLabel elevNum, currfloor, destfloor, status, faultStatus;
 
+	/**
+	 * ElevatorText constructor, instantiates JPanel and fills panels with values
+	 * @param elevNumber The elevator's number
+	 * @param currFloor The elevator's current floor 
+	 * @param destFloor The elevator's destination floor
+	 * @param status The elevator's status
+	 * @param faultStatus The elevator's faults
+	 */
 	public ElevatorText(int elevNumber, int currFloor, int destFloor, ElevatorState state, FaultType fault) {
 		super();
 		setBorder(BorderFactory.createLineBorder(new Color(107, 106, 104), 1));
@@ -32,6 +45,13 @@ public class ElevatorText extends JPanel {
 		add(faultStatus);
 	}
 	
+	/**
+	 * Updates JLabel values
+	 * @param currFloor The new current floor 
+	 * @param destFloor The new destination floor
+	 * @param state The new status
+	 * @param fault The new faults
+	 */
 	public void updateText(int currFloor, int destFloor, ElevatorState state, FaultType fault) {
 		currfloor.setText("Current Floor: " + currFloor);
 		destfloor.setText("Destination Floor: " + destFloor);
