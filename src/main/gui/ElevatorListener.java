@@ -1,6 +1,7 @@
 package main.gui;
 
 import main.common.Constants;
+import main.common.Direction;
 import main.common.Logger;
 import main.common.PacketHandler;
 import main.common.Input.FaultType;
@@ -19,6 +20,8 @@ public class ElevatorListener implements Runnable {
 	private int currFloor;
 	/* The next floor of the elevator */
 	private int nextFloor;
+	/* The direction the elevator is traveling to */
+	private Direction direction;
 	/* Current state of the elevator */
 	private ElevatorState state;
 	/* Current fault of the elevator, if none then this is null */
@@ -32,6 +35,8 @@ public class ElevatorListener implements Runnable {
 	private int[] currentFloors;
 	/* Tracks the next floors of each elevator, index maps to elevator number */
 	private int[] nextFloors;
+	/* Tracks the direction in which the elevator is traveling to */
+	private Direction[] directions;
 	/* Tracks the states of each elevator, index maps to elevator number */
 	private ElevatorState[] states;
 	/* Tracks the faults of each elevator, index maps to elevator number, if no fault, then value will be null */
@@ -39,21 +44,36 @@ public class ElevatorListener implements Runnable {
 	/* The model */
 	private Model model;
 	
-	public ElevatorListener(int elevatorNumber, int[] currentFloors, int[] nextFloors, ElevatorState[] states, FaultType[] elevatorFaults, Model model) {
+	public ElevatorListener(int elevatorNumber, int[] currentFloors, int[] nextFloors, Direction[] directions, ElevatorState[] states, FaultType[] elevatorFaults, Model model) {
 		this.elevatorNumber = elevatorNumber;
 		this.handler = new PacketHandler(69, Constants.MODEL_PORT + elevatorNumber);
 		this.currFloor = 1;
 		this.nextFloor = 1;
+		this.direction = Direction.STOP;
 		this.state = ElevatorState.Idle;
 		this.fault = null;
 		
 		// set the arrays to the arrays from the Model class
 		this.currentFloors = currentFloors;
 		this.nextFloors = nextFloors;
+		this.directions = directions;
 		this.states = states;
 		this.elevatorFaults = elevatorFaults;
 		this.model = model;
 		this.logger = new Logger("Elevator Listener " + elevatorNumber);
+	}
+	
+	private Direction parseDirectionFromPacket(int directionInt) {
+		switch (directionInt) {
+		case 0:
+			return Direction.STOP;
+		case 1:
+			return Direction.UP;
+		case -1:
+			return Direction.DOWN;
+		default:
+			return Direction.STOP;
+		}
 	}
 	
 	/**
@@ -99,20 +119,16 @@ public class ElevatorListener implements Runnable {
 	/** 
 	 * Listens for updates from elevator and updates own values
 	*/
-
-	private boolean getUpdate() {
+	private void getUpdate() {
 		byte[] received = handler.receiveTimeout(Constants.ELEVATOR_LISTENER_TIMEOUT);
 		
-		if (received == null) {
-			logger.log("Elevator " + elevatorNumber + " is now died");
-			model.killElevator(elevatorNumber);
-			return false;
+		if (received != null) {
+			currFloor = (int) received[0];
+			nextFloor = (int) received[1];
+			direction = parseDirectionFromPacket((int) received[2]);
+			state = parseStateFromPacket((int) received[3]);
+			fault = parseFaultFromPacket((int) received[4]);
 		}
-		currFloor = (int) received[0];
-		nextFloor = (int) received[1];
-		state = parseStateFromPacket((int) received[2]);
-		fault = parseFaultFromPacket((int) received[3]);
-		return true;
 	}
 	
 	private void updateModel() {
@@ -122,6 +138,10 @@ public class ElevatorListener implements Runnable {
 		
 		synchronized(nextFloors) {
 			nextFloors[elevatorNumber] = nextFloor;
+		}
+		
+		synchronized(directions) {
+			directions[elevatorNumber] = direction;
 		}
 		
 		synchronized(states) {
@@ -135,7 +155,8 @@ public class ElevatorListener implements Runnable {
 	
 	@Override
 	public void run() {
-		while(getUpdate()) {
+		while(true) {
+			getUpdate();
 			updateModel();
 		}
 	}

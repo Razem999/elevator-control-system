@@ -4,6 +4,7 @@
 package main.elevator;
 
 import main.common.Constants;
+import main.common.Direction;
 import main.common.Logger;
 import main.common.PacketHandler;
 
@@ -42,6 +43,10 @@ public class Elevator implements Runnable {
 	 * Represents if the next destination will be the final one
 	 */
 	private boolean isFinalDestination;
+	/**
+	 * Keeps track of the elevator's direction
+	 */
+	private byte direction;
 	/**
 	 * Keeps track of the current state of the elevator
 	 */
@@ -233,6 +238,7 @@ public class Elevator implements Runnable {
 				logger.log("Door, Trying to open the door");
 			}
 			willDoorsBeStuckClosed = false;
+
 			response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIME_FOR_DOORS);
 			processMessage(response);
 			count--;
@@ -248,13 +254,10 @@ public class Elevator implements Runnable {
 				logger.log("Door, Trying to close the door");
 			}
 			willDoorsBeStuckOpen = false;
+
 			response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIME_FOR_DOORS);
 			processMessage(response);
 			count--;
-			if (willDoorsBeStuckOpen) {
-				count += 1;
-				door.error("open");
-			}
 		}
 		logger.log("Door, Closed");
 	}
@@ -280,29 +283,32 @@ public class Elevator implements Runnable {
 		if (willMotorFail) {
 			return (byte) 1;
 		}
-		else if (willDoorsBeStuckOpen) {
-			return (byte) 2;
+		
+		if (elevatorState == ElevatorState.Idle || elevatorState == ElevatorState.Arriving) {
+			if (willDoorsBeStuckOpen) {
+				return (byte) 2;
+			}
+			else if (willDoorsBeStuckClosed) {
+				return (byte) 3;
+			}
 		}
-		else if (willDoorsBeStuckClosed) {
-			return (byte) 3;
-		}
-		else {
-			return (byte) 0;
-		}
+	
+		return (byte) 0;
 	}
 	
 	/**
 	 * This method creates a byte array to be sent to the Model with this elevators current information
-	 * The byte array will consist of 4 integers. index 0 is current floor, index 1 is destination floor, index 2 is state, index 3 is fault
-	 * Ex: [1,10,0,0] would be curr floor: 1, destination floor: 10, state: idle, fault: none
+	 * The byte array will consist of 5 integers. index 0 is current floor, index 1 is destination floor, index 2 is elevator direction, index 3 is state, index 4 is fault
+	 * Ex: [1,10,0,0,0] would be curr floor: 1, destination floor: 10, direction: STOP, state: idle, fault: none
 	 */
 	private byte[] createStatusUpdate() {
-		byte[] message = new byte[4];
+		byte[] message = new byte[5];
 		
 		message[0] = (byte) currentFloor;
 		message[1] = (byte) destinationFloor;
-		message[2] = convertStateToByte();
-		message[3] = convertFaultToByte();
+		message[2] = (byte) direction;
+		message[3] = convertStateToByte();
+		message[4] = convertFaultToByte();
 		
 		return message;
 	}
@@ -321,16 +327,14 @@ public class Elevator implements Runnable {
 	public void run() {
 		while (isRunning) {
 			logger.log("Current state: " + elevatorState);
-			byte direction = (byte) ((currentFloor == destinationFloor) ? 0
+			direction = (byte) ((currentFloor == destinationFloor) ? 0
 					: (currentFloor > destinationFloor ? -1 : 1));
 			byte[] status = { 1, (byte) currentFloor, direction }, response = null;
 
 			switch (elevatorState) {
 				case Idle:
 					
-					// MODEL MODEL MODEL
-					packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
-					// MODEL MODEL MODEL
+					
 					
 					logger.log("Updating my agent");
 					packetHandler.send(status);
@@ -353,8 +357,13 @@ public class Elevator implements Runnable {
 							elevatorState = ElevatorState.Moving;
 							break; // no need to open/close doors if we're not at the right floor
 						}
-						
+						// MODEL MODEL MODEL
+						packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+						// MODEL MODEL MODEL
 						openCloseDoors();
+						// MODEL MODEL MODEL
+						packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+						// MODEL MODEL MODEL
 					}
 					break;
 
@@ -394,8 +403,11 @@ public class Elevator implements Runnable {
 					break;
 				case Arriving:
 					logger.log("I'm arriving to my destination floor " + destinationFloor);
-					openCloseDoors();
 					
+					// MODEL MODEL MODEL
+					packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+					// MODEL MODEL MODEL
+					openCloseDoors();
 					// MODEL MODEL MODEL
 					packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
 					// MODEL MODEL MODEL

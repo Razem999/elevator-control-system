@@ -59,10 +59,6 @@ public class ElevatorAgent implements Runnable {
 	 * Boolean used to shut down elevator agent thread
 	 */
 	private boolean isRunning;
-	/**
-	 * Boolean representing whether this is the first pickup for the elevator
-	 */
-	private boolean firstPickup;
 	
 	/**
 	 * Default constructor to initialize an elevator agent with a specific elevator id.
@@ -194,16 +190,6 @@ public class ElevatorAgent implements Runnable {
 	 */
 	private byte[] getNextDestinationFloor(ArrayList<Instructions> instructions) {
 		int minDifference = 100, nextFloor = 1, lastFloor = 0;
-		Direction direction = currentDirection;
-		// if direction is stop, set direction to the previous direction
-		if (currentDirection == Direction.STOP) {
-			direction = previousDirection;
-			// if this is the first pickup, we should go in direction of destination
-			if (firstPickup) {
-				direction = instructions.get(0).getDirection();
-				firstPickup = false;
-			}
-		}
 		// iterate through every instruction that should be served by this elevator
 		for (Instructions ins : instructions) {
 			// candidate floor represents the floor that we will potentially go to next, initialize it to 0 if we are going down, the top floor
@@ -255,7 +241,6 @@ public class ElevatorAgent implements Runnable {
 		// send first instructions to elevator
 		byte[] sent = new byte[] { (byte) currentDestination, 0 };
 		byte[] elevFailure = new byte[] { (byte) -1, (byte) elevatorId };
-		firstPickup = true;
 		logger.log("Sending first instruction: " + Arrays.toString(sent));
 		packetHandler.send(sent);
 
@@ -282,6 +267,7 @@ public class ElevatorAgent implements Runnable {
 				currentState = ElevatorState.Arriving;
 			} else {
 				logger.log("Elevator is passing floor " + currentFloor + ", heading " + currentDirection);
+				currentState = ElevatorState.Moving;
 			}
 			// check if intermediate requests can be dealt with here
 			if (!requests.isEmpty()) {
@@ -296,7 +282,7 @@ public class ElevatorAgent implements Runnable {
 				}
 			}
 			// check if elevator has stopped and reached a destination floor
-			if (currentDirection == Direction.STOP && !firstPickup) {
+			if (currentState == ElevatorState.Arriving) {
 				logger.log("Elevator arrived at a pickup/dropoff floor");
 				ArrayList<Integer> toBePickedUp = new ArrayList<>();
 				ArrayList<Integer> toBeRemoved = new ArrayList<>();
