@@ -26,6 +26,7 @@ public class ElevatorText extends JPanel {
 	 * @param elevNumber The elevator's number
 	 * @param currFloor The elevator's current floor 
 	 * @param destFloor The elevator's destination floor
+	 * @param direction The elevator's direction of travel
 	 * @param status The elevator's status
 	 * @param faultStatus The elevator's faults
 	 */
@@ -59,6 +60,7 @@ public class ElevatorText extends JPanel {
 	 * @param destFloor The new destination floor
 	 * @param state The new status
 	 * @param fault The new faults
+	 * @param direction The new direction
 	 */
 	public void updateText(int currFloor, int destFloor, Direction direction, ElevatorState state, FaultType fault) {
 		currfloor.setText("Current Floor: " + currFloor);

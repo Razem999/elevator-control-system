@@ -63,6 +63,12 @@ public class ElevatorListener implements Runnable {
 		this.logger = new Logger("Elevator Listener " + elevatorNumber);
 	}
 	
+	/**
+	 * Takes the integer from a received packet and maps it to elevator Direction.
+	 * 0 = STOP, 1 = UP, -1 = DOWN
+	 * @param directionInt the integer
+	 * @return Direction 
+	 */
 	private Direction parseDirectionFromPacket(int directionInt) {
 		switch (directionInt) {
 		case 0:
