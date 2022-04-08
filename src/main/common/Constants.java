@@ -22,7 +22,7 @@ public class Constants {
 	/** The amount of time the elevator door stays open for before closing*/
 	public static final int DOOR_OPEN_TIME = 3000;
 	/** The amount of time it takes for an Elevator to move floors */
-	public static final int ELEVATOR_TIME_BETWEEN_FLOORS = 9579;
+	public static final int ELEVATOR_TIME_BETWEEN_FLOORS = 9175;
 	/** The amount of time for an Elevator to give up */
 	public static final int ELEVATOR_TIMEOUT = 2000;
 	/** Number of cycles in an idle state that an elevator will stay active for before exiting */
