@@ -16,7 +16,7 @@ import main.elevator.Elevator.ElevatorState;
 public class ElevatorText extends JPanel {
 	
 	/** JLabels used to display the elevator number, current floor, destination floor, status, and any faults */
-	private JLabel elevNum, currfloor, destfloor, status, faultStatus;
+	private JLabel elevNum, currfloor, destfloor, status, faultStatus, direction;
 
 	/**
 	 * ElevatorText constructor, instantiates JPanel and fills panels with values
@@ -29,7 +29,7 @@ public class ElevatorText extends JPanel {
 	public ElevatorText(int elevNumber, int currFloor, int destFloor, ElevatorState state, FaultType fault) {
 		super();
 		setBorder(BorderFactory.createLineBorder(new Color(107, 106, 104), 1));
-		setPreferredSize(new Dimension(175, 185));
+		setPreferredSize(new Dimension(175, 125));
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		
 		
@@ -38,12 +38,14 @@ public class ElevatorText extends JPanel {
 		destfloor = new JLabel("Destination Floor: " + destFloor);
 		status = new JLabel("Status: " + (state == null ? "Uninitialized" : state.toString()));
 		faultStatus = new JLabel("Fault: " + fault);
+		direction = new JLabel("Direction: " + "UP"); // should be replaced by a new parameter
 		
 		add(elevNum);
 		add(currfloor);
 		add(destfloor);
 		add(status);
 		add(faultStatus);
+		add(direction);
 	}
 	
 	/**
@@ -58,6 +60,7 @@ public class ElevatorText extends JPanel {
 		destfloor.setText("Destination Floor: " + destFloor);
 		status.setText("Status: " + ((fault == FaultType.MotorFault) ? "DEAD" : (state == null ? "Uninitialized" : state.toString())));
 		faultStatus.setText(Objects.isNull(fault) ? "No fault" : fault.toString());
+		direction.setText("Direction: " + "UP"); // should be replaced by a new parameter
 	}
 
 }
