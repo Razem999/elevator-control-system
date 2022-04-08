@@ -27,8 +27,6 @@ public class Model {
 	private FaultType[] elevatorFaults;
 	/* Listeners that get info from each individual elevator and updates the values in the arrays */
 	private ArrayList<ElevatorListener> elevatorListeners;
-	/* Tracks if each elevator is dead or not */
-	private boolean[] areAlive;
 	/* logger */
 	private Logger logger;
 	
@@ -40,11 +38,9 @@ public class Model {
 		
 		
 		elevatorListeners = new ArrayList<>();
-		areAlive = new boolean[Constants.NUM_CARS];
 		
 		for (int i = 0; i < Constants.NUM_CARS; i++) {
 			elevatorListeners.add(new ElevatorListener(i, currentFloors, nextFloors, states, elevatorFaults, this));
-			areAlive[i] = true;
 		}
 		
 		logger = new Logger("Model");
@@ -69,15 +65,6 @@ public class Model {
 		return elevatorFaults;
 	}
 	
-	public boolean[] getAreAlive() {
-		return areAlive;
-	}
-	
-	/* Reduces the elevator count when a listener gets that an elevator dies */
-	public void killElevator (int elevatorNumber) {
-		areAlive[elevatorNumber] = false;
-	}
-	
 	/* Start the listener threads */
 	public void startListeners() {
 		// start elevator agents
@@ -94,9 +81,8 @@ public class Model {
 		// Since this is instantiated within the view class, we do not need to exit explicitly since the program terminates once the user exits the view window
 		while (true) {
 			for (int i = 0; i < Constants.NUM_CARS; i++) {
-				System.out.println("ELEV " + i + " " + currentFloors[i] + " " + nextFloors[i] + " " + states[i] + " " + elevatorFaults[i] + " isAlive: " + areAlive[i]);
+				logger.log("ELEV " + i + " " + currentFloors[i] + " " + nextFloors[i] + " " + states[i] + " " + elevatorFaults[i]);
 			}
-			System.out.println();
 
 			try {
 				Thread.sleep(1000);

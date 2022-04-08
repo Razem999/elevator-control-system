@@ -153,13 +153,4 @@ public class GUITest {
 	void numFaultsTest() {
 		assertTrue(model.getFaults().length == Constants.NUM_CARS);
 	}
-	
-	/**
-	 * Test number of elevators that are tracking their alive state
-	 */
-	@Test
-	void numAliveTest() {
-		assertTrue(model.getAreAlive().length == Constants.NUM_CARS);
-	}
-	
 }

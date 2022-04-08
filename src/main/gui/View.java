@@ -53,7 +53,7 @@ public class View extends JFrame implements ActionListener{
 		}
 		
 		pack();
-		new Timer(10, this).start();
+		new Timer(1, this).start();
 		setVisible(true);
 	}
 	

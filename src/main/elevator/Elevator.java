@@ -233,6 +233,7 @@ public class Elevator implements Runnable {
 				logger.log("Door, Trying to open the door");
 			}
 			willDoorsBeStuckClosed = false;
+
 			response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIME_FOR_DOORS);
 			processMessage(response);
 			count--;
@@ -248,13 +249,10 @@ public class Elevator implements Runnable {
 				logger.log("Door, Trying to close the door");
 			}
 			willDoorsBeStuckOpen = false;
+
 			response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIME_FOR_DOORS);
 			processMessage(response);
 			count--;
-			if (willDoorsBeStuckOpen) {
-				count += 1;
-				door.error("open");
-			}
 		}
 		logger.log("Door, Closed");
 	}
@@ -280,15 +278,17 @@ public class Elevator implements Runnable {
 		if (willMotorFail) {
 			return (byte) 1;
 		}
-		else if (willDoorsBeStuckOpen) {
-			return (byte) 2;
+		
+		if (elevatorState == ElevatorState.Idle || elevatorState == ElevatorState.Arriving) {
+			if (willDoorsBeStuckOpen) {
+				return (byte) 2;
+			}
+			else if (willDoorsBeStuckClosed) {
+				return (byte) 3;
+			}
 		}
-		else if (willDoorsBeStuckClosed) {
-			return (byte) 3;
-		}
-		else {
-			return (byte) 0;
-		}
+	
+		return (byte) 0;
 	}
 	
 	/**
@@ -328,9 +328,7 @@ public class Elevator implements Runnable {
 			switch (elevatorState) {
 				case Idle:
 					
-					// MODEL MODEL MODEL
-					packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
-					// MODEL MODEL MODEL
+					
 					
 					logger.log("Updating my agent");
 					packetHandler.send(status);
@@ -353,8 +351,13 @@ public class Elevator implements Runnable {
 							elevatorState = ElevatorState.Moving;
 							break; // no need to open/close doors if we're not at the right floor
 						}
-						
+						// MODEL MODEL MODEL
+						packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+						// MODEL MODEL MODEL
 						openCloseDoors();
+						// MODEL MODEL MODEL
+						packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+						// MODEL MODEL MODEL
 					}
 					break;
 
@@ -394,8 +397,11 @@ public class Elevator implements Runnable {
 					break;
 				case Arriving:
 					logger.log("I'm arriving to my destination floor " + destinationFloor);
-					openCloseDoors();
 					
+					// MODEL MODEL MODEL
+					packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+					// MODEL MODEL MODEL
+					openCloseDoors();
 					// MODEL MODEL MODEL
 					packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
 					// MODEL MODEL MODEL

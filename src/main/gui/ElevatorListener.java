@@ -99,20 +99,15 @@ public class ElevatorListener implements Runnable {
 	/** 
 	 * Listens for updates from elevator and updates own values
 	*/
-
-	private boolean getUpdate() {
+	private void getUpdate() {
 		byte[] received = handler.receiveTimeout(Constants.ELEVATOR_LISTENER_TIMEOUT);
 		
-		if (received == null) {
-			logger.log("Elevator " + elevatorNumber + " is now died");
-			model.killElevator(elevatorNumber);
-			return false;
+		if (received != null) {
+			currFloor = (int) received[0];
+			nextFloor = (int) received[1];
+			state = parseStateFromPacket((int) received[2]);
+			fault = parseFaultFromPacket((int) received[3]);
 		}
-		currFloor = (int) received[0];
-		nextFloor = (int) received[1];
-		state = parseStateFromPacket((int) received[2]);
-		fault = parseFaultFromPacket((int) received[3]);
-		return true;
 	}
 	
 	private void updateModel() {
@@ -135,7 +130,8 @@ public class ElevatorListener implements Runnable {
 	
 	@Override
 	public void run() {
-		while(getUpdate()) {
+		while(true) {
+			getUpdate();
 			updateModel();
 		}
 	}
