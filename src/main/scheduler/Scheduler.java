@@ -224,7 +224,7 @@ public class Scheduler {
 	/**
 	 * Main run method for the scheduler thread
 	 */
-	private void run() {
+	public int run() {
 		byte[] response;
 		Instructions instruction;
 		String stringResponse;
@@ -309,6 +309,7 @@ public class Scheduler {
 				logger.log("Requests:\n" + this);
 			}
 		}
+		return 0;
 	}
 
 	/**
