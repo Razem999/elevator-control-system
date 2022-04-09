@@ -270,7 +270,7 @@ public class FloorManager {
     /**
      * Receives input from the input manager and forwards it to the Scheduler.
      */
-    private void simulate() {
+    public void simulate() {
     	LocalTime prevTime = null;
 		for (Input input : inputList) {
 			sendInput(input);

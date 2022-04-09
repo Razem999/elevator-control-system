@@ -17,6 +17,7 @@ import main.elevator.Elevator.ElevatorState;
 public class ElevatorText extends JPanel {
 	
 	/** JLabels used to display the elevator number, current floor, destination floor, status, and any faults */
+
 	private JLabel elevNum, currfloor, destfloor, status, faultStatus;
 	private UpLamp upLamp;
 	private DownLamp downLamp;
@@ -67,6 +68,7 @@ public class ElevatorText extends JPanel {
 		destfloor.setText("Destination Floor: " + destFloor);
 		status.setText("Status: " + ((fault == FaultType.MotorFault) ? "DEAD" : (state == null ? "Uninitialized" : state.toString())));
 		faultStatus.setText(Objects.isNull(fault) ? "No fault" : fault.toString());
+    
 		if (direction == Direction.UP) {
 			upLamp.LightUpOn(upLamp.getGraphics());
 			downLamp.LightDownOff(downLamp.getGraphics());
@@ -77,5 +79,6 @@ public class ElevatorText extends JPanel {
 			upLamp.LightUpOff(upLamp.getGraphics());
 			downLamp.LightDownOff(downLamp.getGraphics());
 		}
+
 	}
 }
