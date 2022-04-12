@@ -59,7 +59,7 @@ public class CommonTest {
 	 */
 	@Test
 	void checkString() {
-		assertTrue(instruction.toString().equals("INS:[14:05:15,UP,3,4]"));
+		assertTrue(instruction.toString().equals("Instructions(14:05:15,UP,3,4)"));
 	}
 	
 	/**

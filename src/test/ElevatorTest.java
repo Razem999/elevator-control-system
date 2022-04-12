@@ -12,8 +12,6 @@ import org.junit.jupiter.api.Test;
 
 import main.elevator.Elevator;
 import main.elevator.Elevator.ElevatorState;
-import main.scheduler.Scheduler;
-import main.common.PacketHandler;
 
 /**
  * Tests for the Elevator Class

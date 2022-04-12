@@ -50,7 +50,7 @@ public class PacketHandler {
 		}
 	}
 
-	public void setReceiverPort(int sendPort) {
+	public void setSendPort(int sendPort) {
 		this.sendPort = sendPort;
 	}
 
@@ -72,13 +72,31 @@ public class PacketHandler {
 	}
 
 	/**
-	 * Helper function for sending DatagramPacket over a DatagramSocket to a
-	 * specified port
+	 * Helper function for sending DatagramPacket over a DatagramSocket to this class's main communication partner
 	 * 
 	 * @param message the message to send
 	 */
 	public void send(byte[] message) {
 		createPacket(message);
+
+		// Send the datagram packet to the server via the send/receive socket.
+		try {
+			sendReceiveSocket.send(sendPacket);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	/**
+	 * Helper function for sending DatagramPacket over a DatagramSocket to a
+	 * specified port
+	 * 
+	 * @param message the message to send
+	 * @param sendPort the port to send to
+	 */
+	public void send(byte[] message, int sendPort) {
+		createPacket(message, sendPort);
 
 		// Send the datagram packet to the server via the send/receive socket.
 		try {
@@ -96,6 +114,24 @@ public class PacketHandler {
 	 * @return void
 	 */
 	private void createPacket(byte[] message) {
+		// Attempt to send packet to the passed in port
+		try {
+			sendPacket = new DatagramPacket(message, message.length, InetAddress.getLocalHost(), sendPort);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	/**
+	 * Helper function to create a packet with the given byte array message
+	 * This one allows us to specify a port to send to
+	 * 
+	 * @param message the message to create a packet with
+	 * @param port to send to
+	 * @return void
+	 */
+	private void createPacket(byte[] message, int sendPort) {
 		// Attempt to send packet to the passed in port
 		try {
 			sendPacket = new DatagramPacket(message, message.length, InetAddress.getLocalHost(), sendPort);

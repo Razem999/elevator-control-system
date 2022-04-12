@@ -3,9 +3,8 @@
  */
 package main.elevator;
 
-import java.util.Arrays;
-
 import main.common.Constants;
+import main.common.Direction;
 import main.common.Logger;
 import main.common.PacketHandler;
 
@@ -44,6 +43,10 @@ public class Elevator implements Runnable {
 	 * Represents if the next destination will be the final one
 	 */
 	private boolean isFinalDestination;
+	/**
+	 * Keeps track of the elevator's direction
+	 */
+	private byte direction;
 	/**
 	 * Keeps track of the current state of the elevator
 	 */
@@ -227,32 +230,88 @@ public class Elevator implements Runnable {
 	private void openCloseDoors() {
 		byte[] response;
 		int count = willDoorsBeStuckClosed ? 2 : 1;
+		door.open();
 		while (count > 0) {
-			door.open();
+			if (willDoorsBeStuckClosed) {
+				door.error("closed");
+				count++;
+				logger.log("Door, Trying to open the door");
+			}
 			willDoorsBeStuckClosed = false;
+
 			response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIME_FOR_DOORS);
 			processMessage(response);
 			count--;
-			if (willDoorsBeStuckClosed) {
-				count += 1;
-				door.error("closed");
-			}
 		}
+		logger.log("Door, Opened");
 		
 		count = willDoorsBeStuckOpen ? 2 : 1;
+		door.close();
 		while (count > 0) {
-			door.close();
+			if (willDoorsBeStuckOpen) {
+				door.error("open");
+				count++;
+				logger.log("Door, Trying to close the door");
+			}
 			willDoorsBeStuckOpen = false;
+
 			response = packetHandler.receiveTimeout(Constants.ELEVATOR_TIME_FOR_DOORS);
 			processMessage(response);
 			count--;
-			if (willDoorsBeStuckOpen) {
-				count += 1;
-				door.error("open");
-			}
+		}
+		logger.log("Door, Closed");
+	}
+	
+	/* 
+	 * Converts this elevator's current state to a byte for sending to model
+	 * @return stateByte
+	 */
+	private byte convertStateToByte() {
+		switch (elevatorState) {
+			case Idle:
+				return (byte) 0;
+			case Moving:
+				return (byte) 1;
+			case Arriving:
+				return (byte) 2;
+			default:
+				return (byte) 0;
 		}
 	}
 	
+	private byte convertFaultToByte() {
+		if (willMotorFail) {
+			return (byte) 1;
+		}
+		
+		if (elevatorState == ElevatorState.Idle || elevatorState == ElevatorState.Arriving) {
+			if (willDoorsBeStuckOpen) {
+				return (byte) 2;
+			}
+			else if (willDoorsBeStuckClosed) {
+				return (byte) 3;
+			}
+		}
+	
+		return (byte) 0;
+	}
+	
+	/**
+	 * This method creates a byte array to be sent to the Model with this elevators current information
+	 * The byte array will consist of 5 integers. index 0 is current floor, index 1 is destination floor, index 2 is elevator direction, index 3 is state, index 4 is fault
+	 * Ex: [1,10,0,0,0] would be curr floor: 1, destination floor: 10, direction: STOP, state: idle, fault: none
+	 */
+	private byte[] createStatusUpdate() {
+		byte[] message = new byte[5];
+		
+		message[0] = (byte) currentFloor;
+		message[1] = (byte) destinationFloor;
+		message[2] = (byte) direction;
+		message[3] = convertStateToByte();
+		message[4] = convertFaultToByte();
+		
+		return message;
+	}
 	/**
 	 * Shuts down the thread after closing the packetHandler's socket.
 	 */
@@ -268,12 +327,15 @@ public class Elevator implements Runnable {
 	public void run() {
 		while (isRunning) {
 			logger.log("Current state: " + elevatorState);
-			byte direction = (byte) ((currentFloor == destinationFloor) ? 0
+			direction = (byte) ((currentFloor == destinationFloor) ? 0
 					: (currentFloor > destinationFloor ? -1 : 1));
 			byte[] status = { 1, (byte) currentFloor, direction }, response = null;
 
 			switch (elevatorState) {
 				case Idle:
+					
+					
+					
 					logger.log("Updating my agent");
 					packetHandler.send(status);
 					logger.log("Awaiting instructions from scheduler...");	
@@ -295,8 +357,13 @@ public class Elevator implements Runnable {
 							elevatorState = ElevatorState.Moving;
 							break; // no need to open/close doors if we're not at the right floor
 						}
-						
+						// MODEL MODEL MODEL
+						packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+						// MODEL MODEL MODEL
 						openCloseDoors();
+						// MODEL MODEL MODEL
+						packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+						// MODEL MODEL MODEL
 					}
 					break;
 
@@ -321,6 +388,11 @@ public class Elevator implements Runnable {
 						direction = (byte) ((currentFloor == destinationFloor) ? 0
 								: (currentFloor > destinationFloor ? -1 : 1));
 					}
+					
+					// MODEL MODEL MODEL
+					packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+					// MODEL MODEL MODEL
+					
 					if (destinationFloor == currentFloor) {
 						logger.log("Arriving at destination floor " + destinationFloor);
 						elevatorState = ElevatorState.Arriving;
@@ -331,7 +403,14 @@ public class Elevator implements Runnable {
 					break;
 				case Arriving:
 					logger.log("I'm arriving to my destination floor " + destinationFloor);
+					
+					// MODEL MODEL MODEL
+					packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+					// MODEL MODEL MODEL
 					openCloseDoors();
+					// MODEL MODEL MODEL
+					packetHandler.send(createStatusUpdate(), Constants.MODEL_PORT + elevatorNumber);
+					// MODEL MODEL MODEL
 					
 					if (isFinalDestination) {
 						packetHandler.send(status);

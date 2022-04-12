@@ -94,11 +94,10 @@ public class FloorTest {
 	 */
 	@Test
 	void testVerifyFault() {
-		System.out.println(commandsList);
 		assertTrue(floor.getVerifyFault(commandsList.get(5)));
 		assertTrue(floor.getVerifyFault(commandsList.get(6)));
 		assertTrue(floor.getVerifyFault(commandsList.get(7)));
-		assertFalse(floor.getVerifyFault(commandsList.get(8)));
+		assertTrue(floor.getVerifyFault(commandsList.get(8)));
 		assertFalse(floor.getVerifyFault(commandsList.get(9)));
 	}
 	
