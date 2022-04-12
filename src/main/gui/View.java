@@ -48,12 +48,13 @@ public class View extends JFrame implements ActionListener{
 		
 		elevators = new ElevatorText[model.getCurrentFloors().length];
 		for (int i = 0; i < model.getCurrentFloors().length; i++) {
-			elevators[i] = new ElevatorText(i, model.getCurrentFloors()[i], model.getNextFloors()[i], model.getStates()[i], model.getFaults()[i]);
+			elevators[i] = new ElevatorText(i, model.getCurrentFloors()[i], model.getNextFloors()[i], model.getDirection()[i], model.getStates()[i], model.getFaults()[i]);
 			panel.add(elevators[i]);
 		}
 		
 		pack();
-		new Timer(1, this).start();
+
+		new Timer(500, this).start();
 		setVisible(true);
 	}
 	
@@ -63,7 +64,7 @@ public class View extends JFrame implements ActionListener{
 	
 	private void updateText() {
 		for (int i = 0; i < elevators.length; i++) {
-			elevators[i].updateText(model.getCurrentFloors()[i], model.getNextFloors()[i], model.getStates()[i], model.getFaults()[i]);
+			elevators[i].updateText(model.getCurrentFloors()[i], model.getNextFloors()[i], model.getDirection()[i], model.getStates()[i], model.getFaults()[i]);
 		}
 		this.repaint();
 	}

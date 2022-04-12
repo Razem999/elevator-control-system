@@ -4,6 +4,7 @@
 package main.elevator;
 
 import main.common.Constants;
+import main.common.Direction;
 import main.common.Logger;
 import main.common.PacketHandler;
 
@@ -42,6 +43,10 @@ public class Elevator implements Runnable {
 	 * Represents if the next destination will be the final one
 	 */
 	private boolean isFinalDestination;
+	/**
+	 * Keeps track of the elevator's direction
+	 */
+	private byte direction;
 	/**
 	 * Keeps track of the current state of the elevator
 	 */
@@ -293,16 +298,17 @@ public class Elevator implements Runnable {
 	
 	/**
 	 * This method creates a byte array to be sent to the Model with this elevators current information
-	 * The byte array will consist of 4 integers. index 0 is current floor, index 1 is destination floor, index 2 is state, index 3 is fault
-	 * Ex: [1,10,0,0] would be curr floor: 1, destination floor: 10, state: idle, fault: none
+	 * The byte array will consist of 5 integers. index 0 is current floor, index 1 is destination floor, index 2 is elevator direction, index 3 is state, index 4 is fault
+	 * Ex: [1,10,0,0,0] would be curr floor: 1, destination floor: 10, direction: STOP, state: idle, fault: none
 	 */
 	private byte[] createStatusUpdate() {
-		byte[] message = new byte[4];
+		byte[] message = new byte[5];
 		
 		message[0] = (byte) currentFloor;
 		message[1] = (byte) destinationFloor;
-		message[2] = convertStateToByte();
-		message[3] = convertFaultToByte();
+		message[2] = (byte) direction;
+		message[3] = convertStateToByte();
+		message[4] = convertFaultToByte();
 		
 		return message;
 	}
@@ -321,7 +327,7 @@ public class Elevator implements Runnable {
 	public void run() {
 		while (isRunning) {
 			logger.log("Current state: " + elevatorState);
-			byte direction = (byte) ((currentFloor == destinationFloor) ? 0
+			direction = (byte) ((currentFloor == destinationFloor) ? 0
 					: (currentFloor > destinationFloor ? -1 : 1));
 			byte[] status = { 1, (byte) currentFloor, direction }, response = null;
 
