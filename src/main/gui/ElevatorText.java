@@ -16,10 +16,11 @@ import main.elevator.Elevator.ElevatorState;
  */
 public class ElevatorText extends JPanel {
 	
-	/** JLabels used to display the elevator number, current floor, destination floor, status, and any faults */
-
+	/* JLabels used to display the elevator number, current floor, destination floor, status, and any faults */
 	private JLabel elevNum, currfloor, destfloor, status, faultStatus;
+	/* UpLamp represents the up direction when the elevator is moving up*/
 	private UpLamp upLamp;
+	/* DownLamp represents the down direction when the elevator is moving down*/
 	private DownLamp downLamp;
 
 	/**
